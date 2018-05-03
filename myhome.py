@@ -32,10 +32,12 @@ class MyHomeSocket:
         ra = nonce[2:-2].decode('latin1')
         self.authent(ra)
 
-    def _digit_to_hex(self, toconvert):
+    @staticmethod
+    def _digit_to_hex(toconvert):
         return ''.join([hex(int(i))[2:] for i in [toconvert[i:i + 2] for i in range(0, len(toconvert), 2)]])
 
-    def _hex_to_digit(self, toconvert):
+    @staticmethod
+    def _hex_to_digit(toconvert):
         return ''.join([str(int(i, 16)).zfill(2) for i in toconvert])
 
     def authent(self, ra):
@@ -58,6 +60,7 @@ class MyHomeSocket:
 
     def sendrawcommand(self, command):
         self.send(command)
+
 
 my = MyHomeSocket("192.168.1.13", 20000, 'azerty123')
 my.connect()
