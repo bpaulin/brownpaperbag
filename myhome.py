@@ -48,7 +48,7 @@ class MyHomeSocket:
         self.receive()
         self.send("*#*1##")
         nonce = self.receive()
-        ra = nonce[2:-2].decode(self.ENCODING)
+        ra = nonce[2:-2]
         self.authent(ra)
 
     @staticmethod
@@ -73,19 +73,15 @@ class MyHomeSocket:
         ])
 
     def authent(self, ra):
-        print('Ra ' + ra)
         ra = self._digit_to_hex(ra)
-        print('Ra ' + ra)
+        # @todo random string
         rb = hashlib.sha256('rb'.encode(self.ENCODING)).hexdigest()
-        print('Rb ' + rb)
         message = ra + \
             rb + \
             "736F70653E" + \
             "636F70653E" + \
             hashlib.sha256(self._pwd.encode(self.ENCODING)).hexdigest()
-        print(message)
         message = hashlib.sha256(message.encode(self.ENCODING)).hexdigest()
-        print(message)
         self.send(
             "*#" +
             self._hex_to_digit(rb) +
