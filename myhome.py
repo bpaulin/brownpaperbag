@@ -4,83 +4,98 @@
 import socket
 import hashlib
 import time
+import logging
 
 
 class MyHomeSocket:
+    """Manage communication with myhomeserver1"""
+    ENCODING = 'latin1'
+    TIMEOUT = 1
+    _socket = None
+
     def __init__(self, host, port, pwd):
+        self.logger = logging.getLogger('myhome.MyHomeSocket')
+        self.logger.debug('creating an instance of MyHomeSocket')
         self._host = host
         self._port = port
         self._pwd = pwd
-        self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.initSocket()
+
+    def initSocket(self):
+        if self._socket is None:
+            self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self._socket.settimeout(self.TIMEOUT)
+        return self._socket
 
     def send(self, message):
-        print("TX " + message)
-        self._socket.send(message.encode('latin1'))
+        self.logger.debug("TX " + message)
+        self._socket.send(message.encode(self.ENCODING))
 
     def receive(self):
-        message = self._socket.recv(4096)
-        print("RX " + message.decode('latin1'))
+        message = self._socket.recv(4096).decode(self.ENCODING)
+        self.logger.debug("RX " + message)
         return message
 
     def connect(self):
-        self._socket.connect((self._host, self._port))
+        self.logger.debug("connection")
+        try:
+            self._socket.connect((self._host, self._port))
+        except socket.timeout:
+            self.logger.critical("connection timed out")
+            return False
         self.receive()
         self.send("*99*9##")
         self.receive()
         self.send("*#*1##")
         nonce = self.receive()
-        ra = nonce[2:-2].decode('latin1')
+        ra = nonce[2:-2].decode(self.ENCODING)
         self.authent(ra)
 
     @staticmethod
-    def _digit_to_hex(toconvert):
-        return ''.join([hex(int(i))[2:] for i in [toconvert[i:i + 2] for i in range(0, len(toconvert), 2)]])
+    def _digit_to_hex(string_of_digit):
+        """Convert string of digits to string of hex"""
+        return ''.join([
+            hex(int(i))[2:]
+            for i
+            in [
+                string_of_digit[i:i + 2]
+                for i
+                in range(0, len(string_of_digit), 2)
+            ]
+        ])
 
     @staticmethod
     def _hex_to_digit(toconvert):
-        return ''.join([str(int(i, 16)).zfill(2) for i in toconvert])
+        return ''.join([
+            str(int(i, 16)).zfill(2)
+            for i
+            in toconvert
+        ])
 
     def authent(self, ra):
         print('Ra ' + ra)
         ra = self._digit_to_hex(ra)
         print('Ra ' + ra)
-        rb = hashlib.sha256('rb'.encode('latin1')).hexdigest()
+        rb = hashlib.sha256('rb'.encode(self.ENCODING)).hexdigest()
         print('Rb ' + rb)
-        message = ra + rb + "736F70653E" + "636F70653E" + hashlib.sha256(self._pwd.encode('latin1')).hexdigest()
+        message = ra + \
+            rb + \
+            "736F70653E" + \
+            "636F70653E" + \
+            hashlib.sha256(self._pwd.encode(self.ENCODING)).hexdigest()
         print(message)
-        message = hashlib.sha256(message.encode('latin1')).hexdigest()
+        message = hashlib.sha256(message.encode(self.ENCODING)).hexdigest()
         print(message)
-        self.send("*#" + self._hex_to_digit(rb) + "*" + self._hex_to_digit(message) + "##")
+        self.send(
+            "*#" +
+            self._hex_to_digit(rb) +
+            "*" +
+            self._hex_to_digit(message) +
+            "##"
+        )
         self.receive()
         # @todo check answer
         self.send("*#*1##")
 
     def sendcommand(self, who, what, where):
         self.send("*" + who + "*" + what + "*" + where + "##")
-
-    def sendrawcommand(self, command):
-        self.send(command)
-
-
-my = MyHomeSocket("192.168.1.13", 20000, 'azerty123')
-my.connect()
-my.sendcommand('1', '1', '0012')
-time.sleep(5)
-my.sendcommand('1', '0', '0012')
-lights = []
-my.sendrawcommand('*#1*0##')
-while True:
-    response = my.receive().decode('latin1')
-    if response == "*#*1##":
-        break
-    lights.append(response[5:-2])
-
-print(lights)
-
-# for light in lights:
-#     print('light #'+light)
-#     my.sendcommand('1','1',light)
-#     time.sleep(5)
-#     my.sendcommand('1','0',light)
-# while response = my.receive().decode('latin1') != "*#*1##":
-#     print('light')
