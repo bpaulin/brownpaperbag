@@ -1,5 +1,8 @@
 .idea/
-**/__pychache__
+__pycache__/
+brownpaperbag/__pycache__
 local_ignored.py
 dist/
 venv
+*.egg-info/
+.pytest_cache/
