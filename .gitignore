@@ -2,3 +2,4 @@
 **/__pychache__
 local_ignored.py
 dist/
+venv
