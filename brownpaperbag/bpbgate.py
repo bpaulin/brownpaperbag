@@ -75,10 +75,10 @@ class BpbGate:
         # @todo random string
         rb = hashlib.sha256('rb'.encode(self.ENCODING)).hexdigest()
         message = ra + \
-                  rb + \
-                  "736F70653E" + \
-                  "636F70653E" + \
-                  hashlib.sha256(self._pwd.encode(self.ENCODING)).hexdigest()
+            rb + \
+            "736F70653E" + \
+            "636F70653E" + \
+            hashlib.sha256(self._pwd.encode(self.ENCODING)).hexdigest()
         message = hashlib.sha256(message.encode(self.ENCODING)).hexdigest()
         self.send(
             "*#" +

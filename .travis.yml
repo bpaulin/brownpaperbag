@@ -6,6 +6,7 @@ python:
 install:
   - pip install pycodestyle
   - pip install pytest
+  - pip install -e .
 script:
-  - pycodestyle .
+  - pycodestyle brownpaperbag
   - pytest
