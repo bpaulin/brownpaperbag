@@ -146,3 +146,37 @@ class BpbGate:
         """request light state"""
         response = self.send_request('1', where)
         return response[3] == '1'
+
+    def get_automation_ids(self):
+        lights = []
+        self.send('*#2*0##')
+        while True:
+            response = self.receive()
+            if response == "*#*1##":
+                break
+            lights.append(response[5:-2])
+        return lights
+
+    def close_cover(self, where):
+        self.send_command('2', '2', where)
+        self.receive()
+
+    def open_cover(self, where):
+        self.send_command('2', '1', where)
+        self.receive()
+
+    def stop_cover(self, where):
+        self.send_command('2', '0', where)
+        self.receive()
+
+    def is_cover_opening(self, where):
+        response = self.send_request('2', where)
+        return response[3] == '1'
+
+    def is_cover_closing(self, where):
+        response = self.send_request('2', where)
+        return response[3] == '2'
+
+    def is_cover_stopped(self, where):
+        response = self.send_request('2', where)
+        return response[3] == '0'
