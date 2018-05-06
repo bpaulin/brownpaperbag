@@ -1,6 +1,7 @@
 import logging
 import socket
 import hashlib
+from time import sleep
 
 
 class BpbGate:
@@ -39,28 +40,28 @@ class BpbGate:
 
     def send(self, message):
         """send message to socket"""
-        self._logger.debug("send: " + message)
+        self.get_logger().debug("send: " + message)
         try:
-            self.get_socket().sendall(message.encode(self.ENCODING))
+            self.get_socket().send(message.encode(self.ENCODING))
         except BrokenPipeError:
-            self._logger.debug("socket closed")
+            self.get_logger().debug("socket closed")
             self.connect()
-            self._logger.debug("send: " + message)
-            self.get_socket().sendall(message.encode(self.ENCODING))
+            self.get_logger().debug("send: " + message)
+            self.get_socket().send(message.encode(self.ENCODING))
 
     def receive(self):
         """read and return message to socket"""
         message = self.get_socket().recv(4096).decode(self.ENCODING)
-        self._logger.debug("recv: " + message)
+        self.get_logger().debug("recv: " + message)
         return message
 
     def connect(self):
         """connect to socket and authent with hmac"""
-        self._logger.info("connection")
+        self.get_logger().info("connection")
         try:
             self.get_socket().connect((self._host, self._port))
         except socket.timeout:
-            self._logger.critical("connection timed out")
+            self.get_logger().critical("connection timed out")
             return False
         self.receive()
         self.send("*99*9##")
@@ -121,16 +122,25 @@ class BpbGate:
         self.receive()
         return state
 
-    def get_light_ids(self):
-        """return list of all lights ids"""
-        lights = []
-        self.send('*#1*0##')
+    def get_ids(self, what):
+        """return list of all 'what' ids"""
+        items = []
+        self.send('*#'+what+'*0##')
         while True:
             response = self.receive()
             if response == "*#*1##":
                 break
-            lights.append(response[5:-2])
-        return lights
+            items.append(response[5:-2])
+        uniq = []
+        for item in items:
+            if item not in uniq:
+                uniq.append(item)
+        return uniq
+
+    def get_light_ids(self):
+        """return list of all lights ids"""
+        self.get_logger().info("polling lights")
+        return self.get_ids('1')
 
     def turn_on_light(self, where):
         """turn on light by id"""
@@ -144,29 +154,30 @@ class BpbGate:
 
     def is_light_on(self, where):
         """request light state"""
+        self.get_logger().info("getting light state "+where)
         response = self.send_request('1', where)
         return response[3] == '1'
 
-    def get_automation_ids(self):
-        lights = []
-        self.send('*#2*0##')
-        while True:
-            response = self.receive()
-            if response == "*#*1##":
-                break
-            lights.append(response[5:-2])
-        return lights
+    def get_cover_ids(self):
+        self.get_logger().info("polling cover")
+        return self.get_ids('2')
 
     def close_cover(self, where):
+        self.get_logger().info("closing cover "+where)
         self.send_command('2', '2', where)
+        sleep(0.2)
         self.receive()
 
     def open_cover(self, where):
+        self.get_logger().info("opening cover "+where)
         self.send_command('2', '1', where)
+        sleep(0.2)
         self.receive()
 
     def stop_cover(self, where):
+        self.get_logger().info("stopping cover "+where)
         self.send_command('2', '0', where)
+        sleep(0.2)
         self.receive()
 
     def is_cover_opening(self, where):
