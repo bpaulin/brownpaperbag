@@ -7,7 +7,7 @@ from time import sleep
 class BpbGate:
     """Manage communication with myhomeserver1"""
     ENCODING = 'utf-8'
-    TIMEOUT = 5
+    TIMEOUT = 3
     _socket = None
     _logger = None
 
@@ -119,7 +119,10 @@ class BpbGate:
         """send who/where request"""
         self.send("*#" + who + "*" + where + "##")
         state = self.receive()
-        self.receive()
+        try:
+            self.receive()
+        except socket.timeout:
+            pass
         return state
 
     def get_ids(self, what):
