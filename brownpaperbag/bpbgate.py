@@ -162,35 +162,42 @@ class BpbGate:
         return response[3] == '1'
 
     def get_cover_ids(self):
+        """return all covers id"""
         self.get_logger().info("polling cover")
         return self.get_ids('2')
 
     def close_cover(self, where):
+        """close cover by id"""
         self.get_logger().info("closing cover "+where)
         self.send_command('2', '2', where)
         sleep(0.2)
         self.receive()
 
     def open_cover(self, where):
+        """open cover by id"""
         self.get_logger().info("opening cover "+where)
         self.send_command('2', '1', where)
         sleep(0.2)
         self.receive()
 
     def stop_cover(self, where):
+        """stop cover by id"""
         self.get_logger().info("stopping cover "+where)
         self.send_command('2', '0', where)
         sleep(0.2)
         self.receive()
 
     def is_cover_opening(self, where):
+        """ return true if cover is opening"""
         response = self.send_request('2', where)
         return response[3] == '1'
 
     def is_cover_closing(self, where):
+        """ return true if cover is closing"""
         response = self.send_request('2', where)
         return response[3] == '2'
 
     def is_cover_stopped(self, where):
+        """ return true if cover is stopped"""
         response = self.send_request('2', where)
         return response[3] == '0'
