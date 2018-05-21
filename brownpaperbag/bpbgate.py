@@ -7,6 +7,7 @@ COVER_CLOSED = 0
 COVER_OPENING = 1
 COVER_CLOSING = 2
 
+
 class BpbGate:
     """Manage communication with myhomeserver1"""
     ENCODING = 'utf-8'
