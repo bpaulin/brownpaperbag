@@ -3,6 +3,9 @@ import socket
 import hashlib
 from time import sleep
 
+COVER_CLOSED = 0
+COVER_OPENING = 1
+COVER_CLOSING = 2
 
 class BpbGate:
     """Manage communication with myhomeserver1"""
@@ -10,6 +13,8 @@ class BpbGate:
     TIMEOUT = 3
     _socket = None
     _logger = None
+    _light_ids = None
+    _cover_ids = None
 
     def __init__(self, host, port, pwd):
         """Constructor"""
@@ -140,10 +145,15 @@ class BpbGate:
                 uniq.append(item)
         return uniq
 
+    def poll_devices(self):
+        self.get_logger().info("polling lights")
+        self._light_ids = self.get_ids('1')
+        self.get_logger().info("polling cover")
+        self._cover_ids = self.get_ids('2')
+
     def get_light_ids(self):
         """return list of all lights ids"""
-        self.get_logger().info("polling lights")
-        return self.get_ids('1')
+        return self._light_ids
 
     def turn_on_light(self, where):
         """turn on light by id"""
@@ -163,8 +173,7 @@ class BpbGate:
 
     def get_cover_ids(self):
         """return all covers id"""
-        self.get_logger().info("polling cover")
-        return self.get_ids('2')
+        return self._cover_ids
 
     def close_cover(self, where):
         """close cover by id"""
@@ -187,17 +196,7 @@ class BpbGate:
         sleep(0.2)
         self.receive()
 
-    def is_cover_opening(self, where):
-        """ return true if cover is opening"""
+    def get_cover_state(self, where):
+        """ return cover state"""
         response = self.send_request('2', where)
-        return response[3] == '1'
-
-    def is_cover_closing(self, where):
-        """ return true if cover is closing"""
-        response = self.send_request('2', where)
-        return response[3] == '2'
-
-    def is_cover_stopped(self, where):
-        """ return true if cover is stopped"""
-        response = self.send_request('2', where)
-        return response[3] == '0'
+        return response[3]
