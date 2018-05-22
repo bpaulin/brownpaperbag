@@ -2,6 +2,7 @@ import logging
 import socket
 import hashlib
 from time import sleep
+import select
 
 COVER_CLOSED = 0
 COVER_OPENING = 1
@@ -57,9 +58,12 @@ class BpbGate:
 
     def receive(self):
         """read and return message to socket"""
-        message = self.get_socket().recv(4096).decode(self.ENCODING)
-        self.get_logger().debug("recv: " + message)
-        return message
+        ready = select.select([self.get_socket()], [], [])
+        if ready[0]:
+            message = self.get_socket().recv(4096).decode(self.ENCODING)
+            self.get_logger().debug("recv: " + message)
+            return message
+        return ''
 
     def connect(self):
         """connect to socket and authent with hmac"""
@@ -70,7 +74,8 @@ class BpbGate:
             self.get_logger().critical("connection timed out")
             return False
         self.receive()
-        self.send("*99*9##")
+        # @todo event/command
+        self.send("*99*1##")
         self.receive()
         self.send("*#*1##")
         nonce = self.receive()
