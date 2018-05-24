@@ -3,4 +3,4 @@ setup.cfg
 setup.py
 brownpaperbag/__init__.py
 brownpaperbag/bpbgate.py
-brownpaperbag/bpblight.py
+brownpaperbag/publisher.py
