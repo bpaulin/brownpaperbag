@@ -29,6 +29,16 @@ def message_to_topic_and_value(raw_msg):
     return False
 
 
+def on_connect(client, userdata, flags, rc):
+    client.subscribe("bticino/+/+/set")
+
+
+def on_message(client, userdata, msg):
+    print(msg.topic+" "+str(msg.payload))
+    wh = msg.topic.split('/')
+    gate.send_command(wh[1], msg.payload.decode(), wh[2])
+
+
 if __name__ == '__main__':
 
     mqttc = mqtt.Client()
@@ -39,6 +49,8 @@ if __name__ == '__main__':
         logging.debug(buf)
 
     mqttc.on_log = log_callback
+    mqttc.on_connect = on_connect
+    mqttc.on_message = on_message
     gate = BpbGate('192.168.1.13', 20000, 'azerty123')
     gate.logger = logging.basicConfig(level=logging.DEBUG)
 

@@ -4,6 +4,9 @@ import hashlib
 from time import sleep
 import select
 
+EVENT_SESSION = "*99*1##"
+COMMAND_SESSION = "*99*0##"
+
 ACK = "*#*1##"
 NACK = "*#*0##"
 
@@ -76,7 +79,7 @@ class BpbGate:
             return message
         return ''
 
-    def connect(self):
+    def connect(self, session):
         """connect to socket and authent with hmac"""
         self.logger.info("connection")
         try:
@@ -86,7 +89,7 @@ class BpbGate:
             return False
         self.receive()
         # @todo event/command
-        self.send("*99*1##")
+        self.send(session)
         self.receive()
         self.send(ACK)
         nonce = self.receive()
