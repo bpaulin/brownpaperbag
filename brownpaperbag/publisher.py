@@ -1,4 +1,4 @@
-from brownpaperbag.bpbgate import BpbGate
+from brownpaperbag.bpbgate import BpbGate, SESSION_EVENT, SESSION_COMMAND
 import logging
 import paho.mqtt.client as mqtt
 import re
@@ -34,9 +34,8 @@ def on_connect(client, userdata, flags, rc):
 
 
 def on_message(client, userdata, msg):
-    print(msg.topic+" "+str(msg.payload))
     wh = msg.topic.split('/')
-    gate.send_command(wh[1], msg.payload.decode(), wh[2])
+    gate_command.send_command(wh[1], msg.payload.decode(), wh[2])
 
 
 if __name__ == '__main__':
@@ -48,15 +47,17 @@ if __name__ == '__main__':
     def log_callback(client, userdata, level, buf):
         logging.debug(buf)
 
-    mqttc.on_log = log_callback
+    #mqttc.on_log = log_callback
     mqttc.on_connect = on_connect
     mqttc.on_message = on_message
-    gate = BpbGate('192.168.1.13', 20000, 'azerty123')
-    gate.logger = logging.basicConfig(level=logging.DEBUG)
-
-    gate.connect()
+    gate_event = BpbGate('192.168.1.13', 20000, 'azerty123', SESSION_EVENT)
+    #gate_event.logger = logging.basicConfig(level=logging.DEBUG)
+    gate_event.connect()
+    gate_command = BpbGate('192.168.1.13', 20000, 'azerty123', SESSION_COMMAND)
+    gate_command.logger = logging.basicConfig(level=logging.DEBUG)
+    gate_command.connect()
     while True:
-        msgs = split_message(gate.receive())
+        msgs = split_message(gate_event.receive())
         for msg in msgs:
             to_publish = message_to_topic_and_value(msg)
             if to_publish:
