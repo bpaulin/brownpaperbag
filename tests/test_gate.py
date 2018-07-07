@@ -6,7 +6,7 @@ from brownpaperbag.bpbgate import BpbGate
 
 class BpbGateTestCase(unittest.TestCase):
     def setUp(self):
-        self.my = BpbGate("192.168.1.**", 20000, '*******')
+        self.my = BpbGate("192.168.1.**", 20000, '*******', 1)
 
     def test_instance(self):
         self.assertIsInstance(self.my, BpbGate)

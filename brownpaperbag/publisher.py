@@ -1,3 +1,4 @@
+"""gateway mqtt<->openwebnet."""
 from brownpaperbag.bpbgate import BpbGate, SESSION_EVENT, SESSION_COMMAND
 import logging
 import paho.mqtt.client as mqtt
@@ -8,12 +9,12 @@ msg_topic_regex = re.compile(r'\d+')
 
 
 def split_message(raw_msg):
-    """split event message from openwebnet to atomic event"""
+    """Split event message from openwebnet to atomic event."""
     return msg_regex.findall(raw_msg)
 
 
 def message_to_topic_and_value(raw_msg):
-    """convert openwebnet event to topic and value for mqtt"""
+    """Convert openwebnet event to topic and value for mqtt."""
     wh = msg_topic_regex.findall(raw_msg)
     if len(wh) == 3 and wh[0] in ('1', '2'):
         return {
@@ -30,24 +31,31 @@ def message_to_topic_and_value(raw_msg):
 
 
 def on_connect(client, userdata, flags, rc):
+    """Subscribe to right topic."""
     client.subscribe("bticino/+/+/set")
 
 
 def on_message(client, userdata, msg):
+    """Send Openwebnet command when a message is received."""
+    logging.info('handling '+msg.payload.decode()+' on topic '+msg.topic)
     wh = msg.topic.split('/')
     gate_command.send_command(wh[1], msg.payload.decode(), wh[2])
+    gate_command.receive()
 
 
 if __name__ == '__main__':
-
+    """Launch mqtt client to publish and subscribe."""
+    logging.basicConfig(level=logging.DEBUG)
+    logging.info('starting')
     mqttc = mqtt.Client()
     mqttc.connect("localhost")
     mqttc.loop_start()
 
     def log_callback(client, userdata, level, buf):
+        """Log when mqtt receive or post a message."""
         logging.debug(buf)
 
-    #mqttc.on_log = log_callback
+    mqttc.on_log = log_callback
     mqttc.on_connect = on_connect
     mqttc.on_message = on_message
     gate_event = BpbGate('192.168.1.13', 20000, 'azerty123', SESSION_EVENT)
@@ -67,4 +75,4 @@ if __name__ == '__main__':
                     retain=True
                 )
             else:
-                logging.info('skip message '+msg)
+                logging.warning('skip message '+msg)
