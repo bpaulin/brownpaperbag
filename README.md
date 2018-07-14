@@ -17,3 +17,6 @@ gate.turn_on_light('01') # turn on light #01
 gate.turn_off_light('01') # turn off light #01
 gate.is_light_on('01') # return true if light #01 is on
 ```
+
+homeassistant/light/bticino/01/config
+{"name": "prise", "command_topic": "bticino/1/01/set",  "payload_on": "1", "payload_off": "0", "state_topic":"bticino/1/01"}

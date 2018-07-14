@@ -40,7 +40,12 @@ def on_message(client, userdata, msg):
     logging.info('handling '+msg.payload.decode()+' on topic '+msg.topic)
     wh = msg.topic.split('/')
     gate_command.send_command(wh[1], msg.payload.decode(), wh[2])
-    gate_command.receive()
+    #gate_command.receive()
+
+
+def log_callback(client, userdata, level, buf):
+    """Log when mqtt receive or post a message."""
+    logging.debug(buf)
 
 
 if __name__ == '__main__':
@@ -50,10 +55,6 @@ if __name__ == '__main__':
     mqttc = mqtt.Client()
     mqttc.connect("localhost")
     mqttc.loop_start()
-
-    def log_callback(client, userdata, level, buf):
-        """Log when mqtt receive or post a message."""
-        logging.debug(buf)
 
     mqttc.on_log = log_callback
     mqttc.on_connect = on_connect
