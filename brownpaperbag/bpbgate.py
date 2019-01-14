@@ -198,7 +198,8 @@ class BpbGate:
         """Request light state."""
         self.logger.info("getting light state "+where)
         response = self.send_request('1', where)
-        return response[3] == '1'
+        if response not in [ACK, NACK]:
+            return response[3] == '1'
 
     def get_cover_ids(self):
         """Return all covers id."""
