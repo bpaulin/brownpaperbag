@@ -95,7 +95,6 @@ class BpbGate:
             self.logger.critical("connection error")
             return False
         self.receive()
-        # @todo event/command
         self.send(self._session)
         self.receive()
         self.send(ACK)
