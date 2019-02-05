@@ -77,7 +77,7 @@ class BpbGate:
         self._write(ACK)
         nonce = await self._readuntil('##')
         # send authent
-        key = authent.generate_authent(nonce, 'azerty123')
+        key = authent.generate_authent(nonce, self._pwd)
         self._write(key)
         await self._readuntil('##')
         # say ok
