@@ -2,5 +2,5 @@
 setup.cfg
 setup.py
 brownpaperbag/__init__.py
+brownpaperbag/authent.py
 brownpaperbag/bpbgate.py
-brownpaperbag/publisher.py

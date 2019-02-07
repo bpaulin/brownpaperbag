@@ -14,14 +14,14 @@ COVER_STOPPED = 0
 COVER_OPENING = 1
 COVER_CLOSING = 2
 
-ON = '1'
-OFF = '0'
+ON = "1"
+OFF = "0"
 
 
 class BpbGate:
     """Manage communication with myhomeserver1."""
 
-    ENCODING = 'utf-8'
+    ENCODING = "utf-8"
     TIMEOUT = 3
     _socket = None
     _logger = None
@@ -56,30 +56,29 @@ class BpbGate:
     async def _readuntil(self, separator):
         data = await self._reader.readuntil(separator.encode())
         response = data.decode()
-        self.logger.debug('received: '+response)
+        self.logger.debug("received: " + response)
         return response
 
     def _write(self, command):
         self._writer.write(command.encode())
-        self.logger.debug('sent: '+command)
+        self.logger.debug("sent: " + command)
 
     async def command_session(self):
         self._reader, self._writer = await asyncio.open_connection(
-            self._host,
-            self._port
+            self._host, self._port
         )
         # receive hello
-        await self._readuntil('##')
+        await self._readuntil("##")
         # send session
         self._write(SESSION_COMMAND)
-        await self._readuntil('##')
+        await self._readuntil("##")
         # say ok
         self._write(ACK)
-        nonce = await self._readuntil('##')
+        nonce = await self._readuntil("##")
         # send authent
         key = authent.generate_authent(nonce, self._pwd)
         self._write(key)
-        await self._readuntil('##')
+        await self._readuntil("##")
         # say ok
         self._write(ACK)
 
@@ -104,24 +103,24 @@ class BpbGate:
             return data
 
     async def turn_on_light(self, where):
-        await self.send_command('1', '1', where)
+        await self.send_command("1", "1", where)
 
     async def turn_off_light(self, where):
-        await self.send_command('1', '0', where)
+        await self.send_command("1", "0", where)
 
     async def is_light_on(self, where):
-        response = await self.send_request('1', where)
+        response = await self.send_request("1", where)
         return response[3] == ON
 
     async def open_cover(self, where):
-        await self.send_command('2', COVER_OPENING, where)
+        await self.send_command("2", COVER_OPENING, where)
 
     async def close_cover(self, where):
-        await self.send_command('2', COVER_CLOSING, where)
+        await self.send_command("2", COVER_CLOSING, where)
 
     async def stop_cover(self, where):
-        await self.send_command('2', COVER_STOPPED, where)
+        await self.send_command("2", COVER_STOPPED, where)
 
     async def get_cover_state(self, where):
-        response = await self.send_request('2', where)
+        response = await self.send_request("2", where)
         return response[3]
