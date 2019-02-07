@@ -1,7 +1,8 @@
 """BrownPaperBag."""
 
-import logging
 import asyncio
+import logging
+
 from brownpaperbag import authent
 
 SESSION_EVENT = "*99*1##"
@@ -50,6 +51,7 @@ class BpbGate:
         self._logger = logger
 
     async def connect(self):
+        """Create connection."""
         await self.command_session()
         return True
 
@@ -64,6 +66,7 @@ class BpbGate:
         self.logger.debug("sent: " + command)
 
     async def command_session(self):
+        """Initialize Connection."""
         self._reader, self._writer = await asyncio.open_connection(
             self._host, self._port
         )
@@ -85,7 +88,8 @@ class BpbGate:
         return True
 
     async def send_command(self, who, what, where):
-        command = f"*{who}*{what}*{where}##"
+        """Send a command to the gateway."""
+        command = "*%s*%s*%s##" % (who, what, where)
         async with self.lock:
             if self._reader is None or self._reader.at_eof():
                 await self.command_session()
@@ -94,7 +98,8 @@ class BpbGate:
             return data
 
     async def send_request(self, who, where):
-        command = f"*#{who}*{where}##"
+        """Send a request to the gateway."""
+        command = "*#%s*%s##" % (who, where)
         async with self.lock:
             if self._reader is None or self._reader.at_eof():
                 await self.command_session()
@@ -103,24 +108,31 @@ class BpbGate:
             return data
 
     async def turn_on_light(self, where):
+        """Turn on a light by Id."""
         await self.send_command("1", "1", where)
 
     async def turn_off_light(self, where):
+        """Turn off a light by Id."""
         await self.send_command("1", "0", where)
 
     async def is_light_on(self, where):
+        """Return light status by Id."""
         response = await self.send_request("1", where)
         return response[3] == ON
 
     async def open_cover(self, where):
+        """Open a cover by Id."""
         await self.send_command("2", COVER_OPENING, where)
 
     async def close_cover(self, where):
+        """Close a cover by Id."""
         await self.send_command("2", COVER_CLOSING, where)
 
     async def stop_cover(self, where):
+        """Stop a cover by Id."""
         await self.send_command("2", COVER_STOPPED, where)
 
     async def get_cover_state(self, where):
+        """Return cover status by Id."""
         response = await self.send_request("2", where)
         return response[3]

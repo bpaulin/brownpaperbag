@@ -3,7 +3,7 @@ __pycache__/
 brownpaperbag/__pycache__
 local_ignored.py
 dist/
-venv
+.venv
 *.egg-info/
 .pytest_cache/
 .cache

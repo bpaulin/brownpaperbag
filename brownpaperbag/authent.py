@@ -1,3 +1,4 @@
+"""Authentification helpers."""
 import hashlib
 
 CLIENT_ID = "636F70653E"
@@ -22,6 +23,7 @@ def _hex_to_digit(toconvert):
 
 
 def generate_authent(nonce, pwd):
+    """Return authentification string."""
     ra = nonce[2:-2]
     ra = _digit_to_hex(ra)
     # @todo random string
