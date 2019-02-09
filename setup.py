@@ -12,4 +12,5 @@ setup(
     download_url="https://github.com/bpaulin/brownpaperbag/archive/0.0.5.tar.gz",
     keywords=["testing", "openwebnet"],
     classifiers=[],
+    scripts=["bin/brownpaperbag"],
 )

@@ -11,6 +11,8 @@ SESSION_COMMAND = "*99*9##"
 ACK = "*#*1##"
 NACK = "*#*0##"
 
+AUTHENT_HMAC_SHA2 = "*98*2##"
+
 COVER_STOPPED = 0
 COVER_OPENING = 1
 COVER_CLOSING = 2
@@ -67,24 +69,44 @@ class BpbGate:
 
     async def command_session(self):
         """Initialize Connection."""
-        self._reader, self._writer = await asyncio.open_connection(
-            self._host, self._port
-        )
+        self.logger.info("Connecting")
+        try:
+            self._reader, self._writer = await asyncio.open_connection(
+                self._host, self._port
+            )
+        except OSError as err:
+            raise ConnectionError(err)
         # receive hello
-        await self._readuntil("##")
+        hello = await self._readuntil("##")
+        if hello != ACK:
+            self._writer.close()
+            await self._writer.wait_closed()
+            raise ConnectionAbortedError("Unexpected answer")
+        self.logger.info("Connected")
+
+        self.logger.info("Authenticating")
         # send session
         self._write(SESSION_COMMAND)
-        await self._readuntil("##")
+        # Receive authent method
+        authent_method = await self._readuntil("##")
+        if authent_method == AUTHENT_HMAC_SHA2:
+            self.logger.info("hmac sha2 asked")
+        else:
+            raise NotImplementedError("Authentification method not implemented")
         # say ok
         self._write(ACK)
         nonce = await self._readuntil("##")
         # send authent
-        key = authent.generate_authent(nonce, self._pwd)
-        self._write(key)
-        await self._readuntil("##")
+        client_authent = authent.generate_authent(nonce, self._pwd)
+        self._write(client_authent["client_response"])
+        # check authent
+        server_response = await self._readuntil("##")
+        if not authent.check_server_authent(client_authent, server_response):
+            raise ConnectionAbortedError("Unexpected confirmation from server")
         # say ok
         self._write(ACK)
 
+        self.logger.info("Authenticated")
         return True
 
     async def send_command(self, who, what, where):
