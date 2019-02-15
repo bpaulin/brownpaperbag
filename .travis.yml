@@ -1,13 +1,17 @@
-sudo: true
-dist: xenial
 language: python
-matrix:
-  include:
-    - python: 3.5
-    - python: 3.6
-    - python: 3.7
-    - python: 3.7
-      env: TOXENV=flake8
-
-install: pip install tox-travis
+python:
+- 3.6
+- 3.5
+- 3.4
+install: pip install -U tox-travis
 script: tox
+deploy:
+  provider: pypi
+  distributions: sdist bdist_wheel
+  user: bpaulin
+  password:
+    secure: f2D/tVQTIup6vfEnmOjewsAW12vvvtreIFLodK/6DrcTY5cEai6zme1gJn1T790cAPLarArDV9mjJcizXBUDyF8okaLnotv6Q+pErgBwjLD+KmcQXCrcW5DbNHO+5rJAZWgy1cDmuVdwqTA2ecNB5O/APOIQ9wAmCjvo2vDZ2g9WFO+FqPw6sm5kGZMPcPY9jS857J9k9aSMb2FrZ6TIhnMKwR15FxLBbBt1MaXJa9WyM0dHLDWH1FoIwfAgGzAd/EaHcoTM3Zd9GLtrkO3Phn5AbGuHNRd0gpAeGWFmt88uooisPChUWYBjgdFJMjB/VVsKms1VSW0dJD89S/SmJ9IQYdIkJAvC0F4vUNa23XBjNztnE0wEn3j6cI3IsSb48VZ6yXbYRjsqYdlp8gw79jFHrp/Cnppvx5/GR6FfmErza9xBJPyaJZbFTyQdhLfOR1SmU8gBRClLMnaPe7TWjQFhtagYlz9undaOdouSv9B+XB1T60QUhsMEsSocC7eY+WxBojm1Ek8itb4t5kpspTaVXw7FYyMGCyX4J2IK42SGf1J1OCxZIaagxv4DL9AfQIWsccoSYmnw0ZjIAMIO0483CMfDafnuhHkqb4Kr8ihwfG5tstSOddc0WtVDynfjpO/+61QwyS+3aHgOweBeOlHf2Rvql4B1e1BIL+P6hsw=
+  on:
+    tags: true
+    repo: bpaulin/brownpaperbag
+    python: 3.6
