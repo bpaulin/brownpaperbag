@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+import re
 
 from brownpaperbag import authent
 
@@ -63,11 +64,17 @@ class BpbGate:
         self.logger.debug("received: " + response)
         return response
 
+    async def readevent(self, separator="##"):
+        data = await self._reader.readuntil(separator.encode())
+        response = data.decode()
+        self.logger.debug("received: " + response)
+        return response
+
     def _write(self, command):
         self._writer.write(command.encode())
         self.logger.debug("sent: " + command)
 
-    async def command_session(self):
+    async def command_session(self, session=SESSION_COMMAND):
         """Initialize Connection."""
         self.logger.info("Connecting")
         try:
@@ -86,7 +93,7 @@ class BpbGate:
 
         self.logger.info("Authenticating")
         # send session
-        self._write(SESSION_COMMAND)
+        self._write(session)
         # Receive authent method
         authent_method = await self._readuntil("##")
         if authent_method == AUTHENT_HMAC_SHA2:
@@ -109,33 +116,66 @@ class BpbGate:
         self.logger.info("Authenticated")
         return True
 
-    async def send_command(self, who, what, where):
+    async def send_raw(self, command):
         """Send a command to the gateway."""
-        command = "*%s*%s*%s##" % (who, what, where)
         async with self.lock:
             if self._reader is None or self._reader.at_eof():
                 await self.command_session()
             self._write(command)
             data = await self._readuntil(ACK)
             return data
+
+    async def send_command(self, who, what, where):
+        """Send a command to the gateway."""
+        command = "*%s*%s*%s##" % (who, what, where)
+        return await self.send_raw(command)
 
     async def send_request(self, who, where):
         """Send a request to the gateway."""
         command = "*#%s*%s##" % (who, where)
+        return await self.send_raw(command)
+
+    async def send_list(self, who):
+        """Send a request to the gateway."""
+        command = "*#%s*0##" % (who)
         async with self.lock:
             if self._reader is None or self._reader.at_eof():
                 await self.command_session()
             self._write(command)
             data = await self._readuntil(ACK)
-            return data
+            p = re.compile(r"\*\d+\*\d+\*\d+")
+            items = p.findall(data)
+            p = re.compile(r"\d+")
+            hitems = {}
+            for item in items:
+                (who, what, where) = p.findall(item)
+                hitems[where] = what
+            return hitems
+
+    async def get_light_ids(self):
+        """return list of all lights ids"""
+        self.logger.info("polling lights")
+        return await self.send_list("1")
+
+    async def get_cover_ids(self):
+        """return list of all cover ids"""
+        self.logger.info("polling covers")
+        return await self.send_list("2")
+
+    async def get_energy_ids(self):
+        """return list of all cover ids"""
+        self.logger.info("polling covers")
+        return await self.send_list("18")
 
     async def turn_on_light(self, where):
         """Turn on a light by Id."""
         await self.send_command("1", "1", where)
+        return True
 
     async def turn_off_light(self, where):
         """Turn off a light by Id."""
         await self.send_command("1", "0", where)
+        return True
 
     async def is_light_on(self, where):
         """Return light status by Id."""
