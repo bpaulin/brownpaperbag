@@ -36,10 +36,10 @@ def event(ctx):
     loop = asyncio.get_event_loop()
     try:
         loop.run_until_complete(gate.command_session(SESSION_EVENT))
-
     except (ConnectionError, NotImplementedError) as e:
         click.secho(str(e), fg="red")
         return 1
+
     while True:
         click.echo(loop.run_until_complete(gate.readevent()))
 
@@ -79,10 +79,37 @@ def light(ctx, operation, id):
         loop.run_until_complete(gate.turn_on_light(id))
     elif operation == "off":
         loop.run_until_complete(gate.turn_off_light(id))
+
     if loop.run_until_complete(gate.is_light_on(id)):
         click.echo("ON")
     else:
         click.echo("OFF")
+
+
+@main.command()
+@click.option("--status", "operation", flag_value="status", default=True)
+@click.option("--up", "operation", flag_value="up")
+@click.option("--down", "operation", flag_value="down")
+@click.option("--stop", "operation", flag_value="stop")
+@click.argument("id")
+@click.pass_context
+def cover(ctx, operation, id):
+    """Interact with a light."""
+    gate = ctx.obj["GATE"]
+    loop = asyncio.get_event_loop()
+    try:
+        loop.run_until_complete(gate.command_session())
+    except (ConnectionError, NotImplementedError) as e:
+        click.secho(str(e), fg="red")
+        return 1
+    if operation == "up":
+        loop.run_until_complete(gate.open_cover(id))
+    elif operation == "down":
+        loop.run_until_complete(gate.close_cover(id))
+    elif operation == "stop":
+        loop.run_until_complete(gate.stop_cover(id))
+
+    click.echo(loop.run_until_complete(gate.get_cover_state(id)))
 
 
 @main.command()
