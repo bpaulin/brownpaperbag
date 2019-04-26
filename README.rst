@@ -1,9 +1,9 @@
 brownpaperbag
 =============
 
-|image| |GitHub| |PyPI - Downloads|
+|PyPI - version| |GitHub| |PyPI - Downloads|
 
-|image| |Updates|
+|Build| |Updates|
 
    But you try and tell the young people today that...
 
@@ -76,11 +76,11 @@ devices
    cover 06 is UP (*2*1000#1*06##)
    cover 06 is STOPPED (*2*0*06##)
 
-.. |image| image:: https://img.shields.io/pypi/v/brownpaperbag.svg
+.. |PyPI - version| image:: https://img.shields.io/pypi/v/brownpaperbag.svg
    :target: https://pypi.python.org/pypi/brownpaperbag
 .. |GitHub| image:: https://img.shields.io/github/license/bpaulin/brownpaperbag.svg
 .. |PyPI - Downloads| image:: https://img.shields.io/pypi/dm/brownpaperbag.svg
-.. |image| image:: https://img.shields.io/travis/bpaulin/brownpaperbag.svg
+.. |Build| image:: https://img.shields.io/travis/bpaulin/brownpaperbag.svg
    :target: https://travis-ci.org/bpaulin/brownpaperbag
 .. |Updates| image:: https://pyup.io/repos/github/bpaulin/brownpaperbag/shield.svg
    :target: https://pyup.io/repos/github/bpaulin/brownpaperbag/
