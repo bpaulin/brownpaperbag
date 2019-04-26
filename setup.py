@@ -5,11 +5,11 @@
 
 from setuptools import setup, find_packages
 
-with open("README.md") as readme_file:
+with open("README.rst") as readme_file:
     readme = readme_file.read()
 
 history = ''
-with open("HISTORY.md") as history_file:
+with open("HISTORY.rst") as history_file:
     history = history_file.read()
 
 requirements = ["Click>=6.0"]
@@ -22,7 +22,7 @@ setup(
     author="Bruno Paulin",
     author_email="brunopaulin@bpaulin.net",
     classifiers=[
-        "Development Status :: 2 - Pre-Alpha",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
@@ -44,6 +44,6 @@ setup(
     test_suite="tests",
     tests_require=test_requirements,
     url="https://github.com/bpaulin/brownpaperbag",
-    version="version='0.1.0'",
+    version="0.1.2",
     zip_safe=False,
 )
