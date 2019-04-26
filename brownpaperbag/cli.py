@@ -5,6 +5,7 @@ import sys
 import click
 import asyncio
 import re
+import logging
 from brownpaperbag import BpbGate, SESSION_EVENT
 
 
@@ -20,12 +21,15 @@ from brownpaperbag import BpbGate, SESSION_EVENT
     hide_input=True,
     help="OPEN password",
 )
+@click.option("--verbose", is_flag=True)
 @click.pass_context
-def main(ctx, host, port, password):
+def main(ctx, host, port, password, verbose):
     """Console script for brownpaperbag.
 
-    Provides interaction with myhomeserver1"""
+    Provides interaction with myhomeserver1
+    """
     gate = BpbGate(host, port, password)
+    gate.logger = logging.basicConfig(level=logging.DEBUG)
     ctx.ensure_object(dict)
     ctx.obj["GATE"] = gate
     return 0
