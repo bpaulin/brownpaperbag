@@ -65,6 +65,7 @@ class BpbGate:
         return response
 
     async def readevent(self, separator="##"):
+        """Listen to gateway events."""
         data = await self._reader.readuntil(separator.encode())
         response = data.decode()
         self.logger.debug("received: " + response)
@@ -153,17 +154,17 @@ class BpbGate:
             return hitems
 
     async def get_light_ids(self):
-        """return list of all lights ids"""
+        """Return list of all lights ids."""
         self.logger.info("polling lights")
         return await self.send_list("1")
 
     async def get_cover_ids(self):
-        """return list of all cover ids"""
+        """Return list of all cover ids."""
         self.logger.info("polling covers")
         return await self.send_list("2")
 
     async def get_energy_ids(self):
-        """return list of all cover ids"""
+        """Return list of all cover ids."""
         self.logger.info("polling covers")
         return await self.send_list("18")
 
