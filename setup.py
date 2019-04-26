@@ -22,7 +22,7 @@ setup(
     author="Bruno Paulin",
     author_email="brunopaulin@bpaulin.net",
     classifiers=[
-        "Development Status :: 2 - Pre-Alpha",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
@@ -44,6 +44,6 @@ setup(
     test_suite="tests",
     tests_require=test_requirements,
     url="https://github.com/bpaulin/brownpaperbag",
-    version="version='0.1.2'",
+    version="0.1.2",
     zip_safe=False,
 )
