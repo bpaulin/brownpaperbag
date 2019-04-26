@@ -4,6 +4,7 @@
 import sys
 import click
 import asyncio
+import re
 from brownpaperbag import BpbGate, SESSION_EVENT
 
 
@@ -21,7 +22,9 @@ from brownpaperbag import BpbGate, SESSION_EVENT
 )
 @click.pass_context
 def main(ctx, host, port, password):
-    """Console script for brownpaperbag."""
+    """Console script for brownpaperbag.
+
+    Provides interaction with myhomeserver1"""
     gate = BpbGate(host, port, password)
     ctx.ensure_object(dict)
     ctx.obj["GATE"] = gate
@@ -29,9 +32,10 @@ def main(ctx, host, port, password):
 
 
 @main.command()
+@click.option("--human", is_flag=True, help="human readable")
 @click.pass_context
-def event(ctx):
-    """Subscribe to raw gateway events."""
+def event(ctx, human):
+    """Subscribe to gateway events."""
     gate = ctx.obj["GATE"]
     loop = asyncio.get_event_loop()
     try:
@@ -40,15 +44,38 @@ def event(ctx):
         click.secho(str(e), fg="red")
         return 1
 
+    statuses = {}
     while True:
-        click.echo(loop.run_until_complete(gate.readevent()))
+        event = loop.run_until_complete(gate.readevent())
+        if not human:
+            click.echo(event)
+        else:
+            (who, what, where) = re.search(r"\*(.*)\*(.*)\*(.*)##", event).groups()
+            if what.startswith("1000#"):
+                what = what.replace("1000#", "")
+            if who not in statuses.keys():
+                statuses[who] = {}
+            if where not in statuses[who].keys() or what != statuses[who][where]:
+                statuses[who][where] = what
+                if who == "1":
+                    status = "OFF"
+                    if what == "1":
+                        status = "ON"
+                    click.echo("light %s is %s (%s)" % (where, status, event))
+                if who == "2":
+                    status = "STOPPED"
+                    if what == "1":
+                        status = "UP"
+                    elif what == "2":
+                        status = "DOWN"
+                    click.echo("cover %s is %s (%s)" % (where, status, event))
 
 
 @main.command()
 @click.argument("command")
 @click.pass_context
 def raw(ctx, command):
-    """Send raw command."""
+    """Send raw openwebnet command."""
     gate = ctx.obj["GATE"]
     loop = asyncio.get_event_loop()
     try:
@@ -61,9 +88,11 @@ def raw(ctx, command):
 
 
 @main.command()
-@click.option("--status", "operation", flag_value="status", default=True)
-@click.option("--on", "operation", flag_value="on")
-@click.option("--off", "operation", flag_value="off")
+@click.option(
+    "--status", "operation", flag_value="status", default=True, help="get status"
+)
+@click.option("--on", "operation", flag_value="on", help="Turn On")
+@click.option("--off", "operation", flag_value="off", help="Turn Off")
 @click.argument("id")
 @click.pass_context
 def light(ctx, operation, id):
@@ -87,14 +116,16 @@ def light(ctx, operation, id):
 
 
 @main.command()
-@click.option("--status", "operation", flag_value="status", default=True)
-@click.option("--up", "operation", flag_value="up")
-@click.option("--down", "operation", flag_value="down")
-@click.option("--stop", "operation", flag_value="stop")
+@click.option(
+    "--status", "operation", flag_value="status", default=True, help="get status"
+)
+@click.option("--up", "operation", flag_value="Open")
+@click.option("--down", "operation", flag_value="Close")
+@click.option("--stop", "operation", flag_value="Stop")
 @click.argument("id")
 @click.pass_context
 def cover(ctx, operation, id):
-    """Interact with a light."""
+    """Interact with a cover."""
     gate = ctx.obj["GATE"]
     loop = asyncio.get_event_loop()
     try:
@@ -113,8 +144,8 @@ def cover(ctx, operation, id):
 
 
 @main.command()
-@click.option("--lights/--no-lights", default=True)
-@click.option("--covers/--no-covers", default=True)
+@click.option("--lights/--no-lights", default=True, help="Include Lights")
+@click.option("--covers/--no-covers", default=True, help="Include Covers")
 @click.pass_context
 def list(ctx, lights, covers):
     """List known devices."""
