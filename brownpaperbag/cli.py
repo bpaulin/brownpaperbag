@@ -67,6 +67,7 @@ def raw(ctx, command):
 @click.argument("id")
 @click.pass_context
 def light(ctx, operation, id):
+    """Interact with a light."""
     gate = ctx.obj["GATE"]
     loop = asyncio.get_event_loop()
     try:
