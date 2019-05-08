@@ -50,13 +50,11 @@ def event(ctx, human):
 
     statuses = {}
     while True:
-        event = loop.run_until_complete(gate.readevent())
+        event = loop.run_until_complete(gate.readevent_exploded())
         if not human:
             click.echo(event)
         else:
-            (who, what, where) = re.search(r"\*(.*)\*(.*)\*(.*)##", event).groups()
-            if what.startswith("1000#"):
-                what = what.replace("1000#", "")
+            (who, what, where) = event
             if who not in statuses.keys():
                 statuses[who] = {}
             if where not in statuses[who].keys() or what != statuses[who][where]:

@@ -14,9 +14,9 @@ NACK = "*#*0##"
 
 AUTHENT_HMAC_SHA2 = "*98*2##"
 
-COVER_STOPPED = 0
-COVER_OPENING = 1
-COVER_CLOSING = 2
+COVER_STOPPED = "0"
+COVER_OPENING = "1"
+COVER_CLOSING = "2"
 
 ON = "1"
 OFF = "0"
@@ -70,6 +70,14 @@ class BpbGate:
         response = data.decode()
         self.logger.debug("received: " + response)
         return response
+
+    async def readevent_exploded(self):
+        """Listen to gateway events."""
+        response = await self.readevent()
+        (who, what, where) = re.search(r"\*(.*)\*(.*)\*(.*)##", response).groups()
+        if what.startswith("1000#"):
+            what = what.replace("1000#", "")
+        return who, what, where
 
     def _write(self, command):
         self._writer.write(command.encode())
