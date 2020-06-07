@@ -23,6 +23,12 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements_dev.txt
 
+    - name: Test
+      run: |
+        pip install -e .
+        pytest
+        black --check .
+
     - name: Build and publish
       env:
         TWINE_USERNAME: __token__
