@@ -5,18 +5,8 @@
 
 from setuptools import setup, find_packages
 
-with open("README.rst") as readme_file:
+with open("README.md") as readme_file:
     readme = readme_file.read()
-
-history = ''
-with open("HISTORY.rst") as history_file:
-    history = history_file.read()
-
-requirements = ["Click>=6.0"]
-
-setup_requirements = ["pytest-runner"]
-
-test_requirements = ["pytest"]
 
 setup(
     author="Bruno Paulin",
@@ -26,23 +16,18 @@ setup(
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.5",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
     ],
     description="But you try and tell the young people today that...",
     entry_points={"console_scripts": ["brownpaperbag=brownpaperbag.cli:main"]},
-    install_requires=requirements,
+    install_requires=["Click>=6.0"],
     license="MIT license",
-    long_description=readme + "\n\n" + history,
+    long_description=readme,
+    long_description_content_type="text/markdown",
     include_package_data=True,
     keywords="brownpaperbag",
     name="brownpaperbag",
     packages=find_packages(include=["brownpaperbag"]),
-    setup_requires=setup_requirements,
-    test_suite="tests",
-    tests_require=test_requirements,
     url="https://github.com/bpaulin/brownpaperbag",
     version="0.1.8",
     zip_safe=False,
