@@ -2,3 +2,7 @@ pytest
 pytest-cov
 black
 pylint
+setuptools
+wheel
+twine
+bump2version
