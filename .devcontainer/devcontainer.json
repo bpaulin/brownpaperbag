@@ -32,7 +32,9 @@
 			"**/__pycache__": true,
 			"**/.pytest_cache": true,
 			".eggs": true,
-			"*.egg-info": true
+			"*.egg-info": true,
+			"build": true,
+			"dist": true
 		},
 		"editor.insertSpaces": true,
 		"editor.tabSize": 4,
