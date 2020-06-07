@@ -29,6 +29,6 @@ setup(
     name="brownpaperbag",
     packages=find_packages(include=["brownpaperbag"]),
     url="https://github.com/bpaulin/brownpaperbag",
-    version="0.1.9",
+    version="1.0.0",
     zip_safe=False,
 )
