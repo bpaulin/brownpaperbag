@@ -1,5 +1,5 @@
 pytest
-pytest-cov
+pytest-cov==2.9.0
 black
 pylint==2.5.3
 setuptools
