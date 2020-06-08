@@ -2,7 +2,7 @@ pytest
 pytest-cov
 black
 pylint
-setuptools
+setuptools==47.1.1
 wheel
 twine
 bump2version
