@@ -3,6 +3,6 @@ pytest-cov
 black
 pylint
 setuptools
-wheel
+wheel==0.34.2
 twine
 bump2version==1.0.0
