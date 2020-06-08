@@ -1,8 +1,8 @@
-pytest
+pytest==5.4.3
 pytest-cov==2.9.0
-black
+black==19.10b0
 pylint==2.5.3
-setuptools
+setuptools==47.1.1
 wheel==0.34.2
-twine
+twine==3.1.1
 bump2version==1.0.0
