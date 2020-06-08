@@ -1,6 +1,6 @@
 pytest
 pytest-cov
-black
+black==19.10b0
 pylint
 setuptools
 wheel
