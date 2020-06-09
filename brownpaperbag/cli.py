@@ -97,7 +97,7 @@ def raw(ctx, command):
 @click.option("--off", "operation", flag_value="off", help="Turn Off")
 @click.argument("id")
 @click.pass_context
-def light(ctx, operation, id):
+def light(ctx, operation, light_id):
     """Interact with a light."""
     gate = ctx.obj["GATE"]
     loop = asyncio.get_event_loop()
@@ -107,11 +107,11 @@ def light(ctx, operation, id):
         click.secho(str(e), fg="red")
         return 1
     if operation == "on":
-        loop.run_until_complete(gate.turn_on_light(id))
+        loop.run_until_complete(gate.turn_on_light(light_id))
     elif operation == "off":
-        loop.run_until_complete(gate.turn_off_light(id))
+        loop.run_until_complete(gate.turn_off_light(light_id))
 
-    if loop.run_until_complete(gate.is_light_on(id)):
+    if loop.run_until_complete(gate.is_light_on(light_id)):
         click.echo("ON")
     else:
         click.echo("OFF")
@@ -126,7 +126,7 @@ def light(ctx, operation, id):
 @click.option("--stop", "operation", flag_value="Stop")
 @click.argument("id")
 @click.pass_context
-def cover(ctx, operation, id):
+def cover(ctx, operation, cover_id):
     """Interact with a cover."""
     gate = ctx.obj["GATE"]
     loop = asyncio.get_event_loop()
@@ -136,20 +136,20 @@ def cover(ctx, operation, id):
         click.secho(str(e), fg="red")
         return 1
     if operation == "up":
-        loop.run_until_complete(gate.open_cover(id))
+        loop.run_until_complete(gate.open_cover(cover_id))
     elif operation == "down":
-        loop.run_until_complete(gate.close_cover(id))
+        loop.run_until_complete(gate.close_cover(cover_id))
     elif operation == "stop":
-        loop.run_until_complete(gate.stop_cover(id))
+        loop.run_until_complete(gate.stop_cover(cover_id))
 
-    click.echo(loop.run_until_complete(gate.get_cover_state(id)))
+    click.echo(loop.run_until_complete(gate.get_cover_state(cover_id)))
 
 
-@main.command()
+@main.command("list")
 @click.option("--lights/--no-lights", default=True, help="Include Lights")
 @click.option("--covers/--no-covers", default=True, help="Include Covers")
 @click.pass_context
-def list(ctx, lights, covers):
+def list_devices(ctx, lights, covers):
     """List known devices."""
     gate = ctx.obj["GATE"]
     loop = asyncio.get_event_loop()

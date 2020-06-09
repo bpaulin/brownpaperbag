@@ -26,14 +26,14 @@ def test_generate_authent():
     assert client["client_response"] == VALID_PARAMS["client_response"]
 
     server = authent.check_server_authent(client, VALID_PARAMS["server_response"],)
-    assert True == server
+    assert server
 
 
 def test_generate_authent_without_rb():
     nonce = VALID_PARAMS["nonce"]
     password = VALID_PARAMS["password"]
     client = authent.generate_authent(nonce, password)
-    assert client["rb"] != None
+    assert client["rb"] is not None
 
 
 def test_generate_random_rb():
