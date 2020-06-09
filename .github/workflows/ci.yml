@@ -26,7 +26,7 @@ jobs:
     - name: Test and build
       run: |
         pip install -e .
-        pytest --cov=./ --cov-report=xml
+        pytest --cov-report=xml
         black --check .
         python setup.py sdist bdist_wheel
 
