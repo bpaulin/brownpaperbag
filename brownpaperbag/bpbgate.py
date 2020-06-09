@@ -27,12 +27,11 @@ class BpbGate:
 
     ENCODING = "utf-8"
     TIMEOUT = 3
-    _socket = None
-    _logger = None
+    _logger = None  # type: logging.Logger
     _light_ids = None
     _cover_ids = None
-    _writer = None
-    _reader = None
+    _writer = None  # type: asyncio.StreamWriter
+    _reader = None  # type: asyncio.StreamReader
 
     def __init__(self, host, port, pwd):
         """Constructor."""
