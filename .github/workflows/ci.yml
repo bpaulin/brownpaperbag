@@ -26,9 +26,16 @@ jobs:
     - name: Test and build
       run: |
         pip install -e .
-        pytest
+        pytest --cov=./ --cov-report=xml
         black --check .
         python setup.py sdist bdist_wheel
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1.0.7
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        file: ./coverage.xml
+        flags: unittests
 
     - name: Publish on test.pypi
       env:
