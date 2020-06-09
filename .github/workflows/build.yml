@@ -1,13 +1,12 @@
 # This workflows will upload a Python Package using Twine when a release is created
 # For more information see: https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions#publishing-to-package-registries
 
-name: CI/CD
+name: build
 
 on: push
 
 jobs:
-  deploy:
-
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -26,9 +25,17 @@ jobs:
     - name: Test and build
       run: |
         pip install -e .
-        pytest
+        pytest --cov-report=xml
         black --check .
         python setup.py sdist bdist_wheel
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1.0.7
+      if: github.ref == 'refs/heads/master'
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        file: ./coverage.xml
+        flags: unittests
 
     - name: Publish on test.pypi
       env:
