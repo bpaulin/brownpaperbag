@@ -24,13 +24,17 @@ def _hex_to_digit(toconvert):
     return "".join([str(int(i, 16)).zfill(2) for i in toconvert])
 
 
-def generate_authent(nonce, pwd):
+def _generate_random_rb():
+    return "".join(random.choice(string.ascii_letters) for x in range(20))
+
+
+def generate_authent(nonce, pwd, rb=None):
     """Return authentification string."""
     ra = nonce[2:-2]
     ra = _digit_to_hex(ra)
-    rb = hashlib.sha256(
-        "".join(random.choice(string.ascii_letters) for x in range(20)).encode()
-    ).hexdigest()
+    if not rb:
+        rb = _generate_random_rb()
+    rb = hashlib.sha256(rb.encode()).hexdigest()
     message = ra + rb + SERVER_ID + CLIENT_ID + hashlib.sha256(pwd.encode()).hexdigest()
     message = hashlib.sha256(message.encode()).hexdigest()
     return {
