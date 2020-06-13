@@ -5,6 +5,7 @@ import logging
 import re
 
 from brownpaperbag import authent
+from asyncio.streams import IncompleteReadError
 
 SESSION_EVENT = "*99*1##"
 SESSION_COMMAND = "*99*9##"
@@ -58,7 +59,13 @@ class BpbGate:
         return True
 
     async def _readuntil(self, separator):
-        data = await self._reader.readuntil(separator.encode())
+        try:
+            data = await self._reader.readuntil(separator.encode())
+        except IncompleteReadError as ex:
+            self.logger.error(
+                "'%s' expected, received '%s'" % (separator, ex.partial.decode())
+            )
+            raise
         response = data.decode()
         self.logger.debug("received: " + response)
         return response
