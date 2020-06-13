@@ -142,6 +142,7 @@ class BpbGate:
             data = await self._readuntil(ACK)
             if not data:
                 # retry
+                self._write(command)
                 data = await self._readuntil(ACK)
             return data
 
