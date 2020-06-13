@@ -62,12 +62,10 @@ class BpbGate:
             data = await self._reader.readuntil(separator.encode())
         except asyncio.IncompleteReadError as ex:
             self.logger.warning(
-                "'%s' expected, received '%s'. will retry"
-                % (separator, ex.partial.decode())
+                "'%s' expected, received '%s'" % (separator, ex.partial.decode())
             )
             if ex.partial.decode() == NACK:
-                # retry
-                data = await self._reader.readuntil(separator.encode())
+                return False
             else:
                 raise
         response = data.decode()
@@ -142,6 +140,9 @@ class BpbGate:
                 await self.command_session()
             self._write(command)
             data = await self._readuntil(ACK)
+            if not data:
+                # retry
+                data = await self._readuntil(ACK)
             return data
 
     async def send_command(self, who, what, where):
