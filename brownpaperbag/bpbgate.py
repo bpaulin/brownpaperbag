@@ -38,7 +38,6 @@ class BpbGate:
         self._host = host
         self._port = port
         self._pwd = pwd
-        self.lock = asyncio.Lock()
 
     @property
     def logger(self):
@@ -51,11 +50,6 @@ class BpbGate:
     def logger(self, logger: logging.getLoggerClass()):
         """Allow override of logger."""
         self._logger = logger
-
-    async def connect(self):
-        """Create connection."""
-        await self.command_session()
-        return True
 
     async def _readuntil(self, separator):
         try:
@@ -72,26 +66,11 @@ class BpbGate:
         self.logger.debug("received: " + response)
         return response
 
-    async def readevent(self, separator="##"):
-        """Listen to gateway events."""
-        data = await self._reader.readuntil(separator.encode())
-        response = data.decode()
-        self.logger.debug("received: " + response)
-        return response
-
-    async def readevent_exploded(self):
-        """Listen to gateway events."""
-        response = await self.readevent()
-        (who, what, where) = re.search(r"\*(.*)\*(.*)\*(.*)##", response).groups()
-        if what.startswith("1000#"):
-            what = what.replace("1000#", "")
-        return who, what, where
-
     def _write(self, command):
         self._writer.write(command.encode())
         self.logger.debug("sent: " + command)
 
-    async def command_session(self, session=SESSION_COMMAND):
+    async def _open_session(self, session=SESSION_COMMAND):
         """Initialize Connection."""
         self.logger.info("Connecting")
         try:
@@ -145,6 +124,18 @@ class BpbGate:
                 self._write(command)
                 data = await self._readuntil(ACK)
             return data
+
+
+class BpbCommandSession(BpbGate):
+    def __init__(self, host, port, pwd):
+        """Constructor."""
+        super().__init__(host, port, pwd)
+        self.lock = asyncio.Lock()
+
+    async def connect(self):
+        """Create connection."""
+        await self._open_session()
+        return True
 
     async def send_command(self, who, what, where):
         """Send a command to the gateway."""
@@ -219,3 +210,25 @@ class BpbGate:
         """Return cover status by Id."""
         response = await self.send_request("2", where)
         return response[3]
+
+
+class BpbEventSession(BpbGate):
+    async def connect(self):
+        """Create connection."""
+        await self._open_session(SESSION_EVENT)
+        return True
+
+    async def readevent(self, separator="##"):
+        """Listen to gateway events."""
+        data = await self._reader.readuntil(separator.encode())
+        response = data.decode()
+        self.logger.debug("received: " + response)
+        return response
+
+    async def readevent_exploded(self):
+        """Listen to gateway events."""
+        response = await self.readevent()
+        (who, what, where) = re.search(r"\*(.*)\*(.*)\*(.*)##", response).groups()
+        if what.startswith("1000#"):
+            what = what.replace("1000#", "")
+        return who, what, where

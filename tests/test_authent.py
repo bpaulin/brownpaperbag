@@ -1,7 +1,8 @@
 # content of test_time.py
+from datetime import datetime, timedelta
+
 import pytest
 from brownpaperbag import authent
-from datetime import datetime, timedelta
 
 VALID_PARAMS = {
     "nonce": "*#02000314150304060013131006110815150615091405090400021413081501010501090312041402151400131409111112130303100602050504030715110105##",

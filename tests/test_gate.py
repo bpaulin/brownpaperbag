@@ -1,6 +1,7 @@
-import unittest
 import logging
-from brownpaperbag import BpbGate
+import unittest
+
+from brownpaperbag.bpbgate import BpbGate
 
 
 class BpbGateTestCase(unittest.TestCase):

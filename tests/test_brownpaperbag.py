@@ -4,11 +4,8 @@
 """Tests for `brownpaperbag` package."""
 
 import pytest
-
+from brownpaperbag import brownpaperbag, cli
 from click.testing import CliRunner
-
-from brownpaperbag import brownpaperbag
-from brownpaperbag import cli
 
 
 def test_command_line_interface():

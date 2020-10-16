@@ -1,12 +1,30 @@
 # -*- coding: utf-8 -*-
 
 """Console script for brownpaperbag."""
-import sys
-import click
 import asyncio
-import re
 import logging
-from brownpaperbag import BpbGate, SESSION_EVENT
+import re
+import sys
+
+import click
+from click import ClickException
+
+from brownpaperbag import BpbCommandSession, BpbEventSession
+
+
+def get_session(ctx, session_event=True):
+    if session_event:
+        gate = BpbEventSession(ctx.obj["host"], ctx.obj["port"], ctx.obj["password"])
+    else:
+        gate = BpbCommandSession(ctx.obj["host"], ctx.obj["port"], ctx.obj["password"])
+    if ctx.obj["verbose"]:
+        gate.logger = logging.basicConfig(level=logging.DEBUG)
+    loop = asyncio.get_event_loop()
+    try:
+        loop.run_until_complete(gate.connect())
+    except (ConnectionError, NotImplementedError) as e:
+        raise ClickException(str(e))
+    return gate
 
 
 @click.group()
@@ -28,11 +46,8 @@ def main(ctx, host, port, password, verbose):
 
     Provides interaction with myhomeserver1
     """
-    gate = BpbGate(host, port, password)
-    if verbose:
-        gate.logger = logging.basicConfig(level=logging.DEBUG)
     ctx.ensure_object(dict)
-    ctx.obj["GATE"] = gate
+    ctx.obj = {"host": host, "port": port, "password": password, "verbose": verbose}
     return 0
 
 
@@ -41,14 +56,8 @@ def main(ctx, host, port, password, verbose):
 @click.pass_context
 def event(ctx, human):
     """Subscribe to gateway events."""
-    gate = ctx.obj["GATE"]
+    gate = get_session(ctx, True)
     loop = asyncio.get_event_loop()
-    try:
-        loop.run_until_complete(gate.command_session(SESSION_EVENT))
-    except (ConnectionError, NotImplementedError) as e:
-        click.secho(str(e), fg="red")
-        return 1
-
     statuses = {}
     while True:
         event = loop.run_until_complete(gate.readevent_exploded())
@@ -79,14 +88,8 @@ def event(ctx, human):
 @click.pass_context
 def raw(ctx, command):
     """Send raw openwebnet command."""
-    gate = ctx.obj["GATE"]
+    gate = get_session(ctx, False)
     loop = asyncio.get_event_loop()
-    try:
-        loop.run_until_complete(gate.command_session())
-    except (ConnectionError, NotImplementedError) as e:
-        click.secho(str(e), fg="red")
-        return 1
-
     click.echo(loop.run_until_complete(gate.send_raw(command)))
 
 
@@ -100,7 +103,7 @@ def raw(ctx, command):
 @click.pass_context
 def light(ctx, operation, light_id):
     """Interact with a light."""
-    gate = ctx.obj["GATE"]
+    gate = get_session(ctx, False)
     loop = asyncio.get_event_loop()
     try:
         loop.run_until_complete(gate.command_session())
@@ -129,13 +132,8 @@ def light(ctx, operation, light_id):
 @click.pass_context
 def cover(ctx, operation, cover_id):
     """Interact with a cover."""
-    gate = ctx.obj["GATE"]
+    gate = get_session(ctx, False)
     loop = asyncio.get_event_loop()
-    try:
-        loop.run_until_complete(gate.command_session())
-    except (ConnectionError, NotImplementedError) as e:
-        click.secho(str(e), fg="red")
-        return 1
     if operation == "up":
         loop.run_until_complete(gate.open_cover(cover_id))
     elif operation == "down":
@@ -152,13 +150,8 @@ def cover(ctx, operation, cover_id):
 @click.pass_context
 def list_devices(ctx, lights, covers):
     """List known devices."""
-    gate = ctx.obj["GATE"]
+    gate = get_session(ctx, False)
     loop = asyncio.get_event_loop()
-    try:
-        loop.run_until_complete(gate.command_session())
-    except (ConnectionError, NotImplementedError) as e:
-        click.secho(str(e), fg="red")
-        return 1
     if lights:
         click.echo("Lights: ")
         bpb_lights = loop.run_until_complete(gate.get_light_ids())
