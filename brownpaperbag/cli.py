@@ -29,7 +29,8 @@ def main(ctx, host, port, password, verbose):
     Provides interaction with myhomeserver1
     """
     gate = BpbGate(host, port, password)
-    gate.logger = logging.basicConfig(level=logging.DEBUG)
+    if verbose:
+        gate.logger = logging.basicConfig(level=logging.DEBUG)
     ctx.ensure_object(dict)
     ctx.obj["GATE"] = gate
     return 0
@@ -121,10 +122,10 @@ def light(ctx, operation, light_id):
 @click.option(
     "--status", "operation", flag_value="status", default=True, help="get status"
 )
-@click.option("--up", "operation", flag_value="Open")
-@click.option("--down", "operation", flag_value="Close")
-@click.option("--stop", "operation", flag_value="Stop")
-@click.argument("id")
+@click.option("--up", "operation", flag_value="up", help="Open")
+@click.option("--down", "operation", flag_value="down", help="Close")
+@click.option("--stop", "operation", flag_value="stop", help="Stop")
+@click.argument("cover_id")
 @click.pass_context
 def cover(ctx, operation, cover_id):
     """Interact with a cover."""
