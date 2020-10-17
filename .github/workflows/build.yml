@@ -26,6 +26,7 @@ jobs:
       run: |
         pip install -e .
         pytest --cov-report=xml
+        pylint brownpaperbag
         black --check .
         python setup.py sdist bdist_wheel
 
