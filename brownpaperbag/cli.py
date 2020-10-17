@@ -3,7 +3,6 @@
 """Console script for brownpaperbag."""
 import asyncio
 import logging
-import re
 import sys
 
 import click
@@ -13,19 +12,20 @@ from brownpaperbag import BpbCommandSession, BpbEventSession
 
 
 def get_session(ctx, session_event=True):
+    """ return an open connection. """
     if session_event:
         gate = BpbEventSession(ctx.obj["host"], ctx.obj["port"], ctx.obj["password"])
     else:
         gate = BpbCommandSession(ctx.obj["host"], ctx.obj["port"], ctx.obj["password"])
     if ctx.obj["verbose"] == 1:
-        gate.logger = logging.basicConfig(level=logging.INFO)
+        logging.basicConfig(level=logging.INFO)
     elif ctx.obj["verbose"] == 2:
-        gate.logger = logging.basicConfig(level=logging.DEBUG)
+        logging.basicConfig(level=logging.DEBUG)
     loop = asyncio.get_event_loop()
     try:
         loop.run_until_complete(gate.connect())
-    except (ConnectionError, NotImplementedError) as e:
-        raise ClickException(str(e))
+    except (ConnectionError, NotImplementedError) as err:
+        raise ClickException(str(err)) from err
     return gate
 
 
@@ -62,11 +62,11 @@ def event(ctx, human):
     loop = asyncio.get_event_loop()
     statuses = {}
     while True:
-        event = loop.run_until_complete(gate.readevent_exploded())
+        message = loop.run_until_complete(gate.readevent_exploded())
         if not human:
-            click.echo(event)
+            click.echo(message)
         else:
-            (who, what, where) = event
+            (who, what, where) = message
             if who not in statuses.keys():
                 statuses[who] = {}
             if where not in statuses[who].keys() or what != statuses[who][where]:
@@ -75,14 +75,14 @@ def event(ctx, human):
                     status = "OFF"
                     if what == "1":
                         status = "ON"
-                    click.echo("light %s is %s (%s)" % (where, status, event))
+                    click.echo("light %s is %s (%s)" % (where, status, message))
                 if who == "2":
                     status = "STOPPED"
                     if what == "1":
                         status = "UP"
                     elif what == "2":
                         status = "DOWN"
-                    click.echo("cover %s is %s (%s)" % (where, status, event))
+                    click.echo("cover %s is %s (%s)" % (where, status, message))
 
 
 @main.command()
@@ -105,13 +105,8 @@ def raw(ctx, command):
 @click.pass_context
 def light(ctx, operation, light_id):
     """Interact with a light."""
-    gate = get_session(ctx, False)
+    gate = get_session(ctx, True)
     loop = asyncio.get_event_loop()
-    try:
-        loop.run_until_complete(gate.command_session())
-    except (ConnectionError, NotImplementedError) as e:
-        click.secho(str(e), fg="red")
-        return 1
     if operation == "on":
         loop.run_until_complete(gate.turn_on_light(light_id))
     elif operation == "off":
@@ -167,4 +162,5 @@ def list_devices(ctx, lights, covers):
 
 
 if __name__ == "__main__":
-    sys.exit(main(auto_envvar_prefix="BPB", obj={}))  # pragma: no cover
+    # pylint: disable=unexpected-keyword-arg,no-value-for-parameter
+    sys.exit(main(auto_envvar_prefix="BPB", obj={}))

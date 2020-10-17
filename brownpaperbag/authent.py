@@ -28,21 +28,27 @@ def _generate_random_rb():
     return "".join(random.choice(string.ascii_letters) for x in range(20))
 
 
-def generate_authent(nonce, pwd, rb=None):
+def generate_authent(nonce, pwd, client_random=None):
     """Return authentification string."""
-    ra = nonce[2:-2]
-    ra = _digit_to_hex(ra)
-    if not rb:
-        rb = _generate_random_rb()
-    rb = hashlib.sha256(rb.encode()).hexdigest()
-    message = ra + rb + SERVER_ID + CLIENT_ID + hashlib.sha256(pwd.encode()).hexdigest()
+    server_random = nonce[2:-2]
+    server_random = _digit_to_hex(server_random)
+    if not client_random:
+        client_random = _generate_random_rb()
+    client_random = hashlib.sha256(client_random.encode()).hexdigest()
+    message = (
+        server_random
+        + client_random
+        + SERVER_ID
+        + CLIENT_ID
+        + hashlib.sha256(pwd.encode()).hexdigest()
+    )
     message = hashlib.sha256(message.encode()).hexdigest()
     return {
-        "ra": ra,
-        "rb": rb,
+        "ra": server_random,
+        "rb": client_random,
         "pwd": pwd,
         "client_response": "*#"
-        + _hex_to_digit(rb)
+        + _hex_to_digit(client_random)
         + "*"
         + _hex_to_digit(message)
         + "##",

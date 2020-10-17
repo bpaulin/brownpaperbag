@@ -32,12 +32,14 @@ class BpbGate:
     _cover_ids = None
     _writer = None  # type: asyncio.StreamWriter
     _reader = None  # type: asyncio.StreamReader
+    _session_type = None
 
     def __init__(self, host, port, pwd):
         """Constructor."""
         self._host = host
         self._port = port
         self._pwd = pwd
+        self.lock = asyncio.Lock()
 
     @property
     def logger(self):
@@ -56,19 +58,18 @@ class BpbGate:
             data = await self._reader.readuntil(separator.encode())
         except asyncio.IncompleteReadError as ex:
             self.logger.warning(
-                "'%s' expected, received '%s'" % (separator, ex.partial.decode())
+                "'%s' expected, received '%s'", separator, ex.partial.decode()
             )
             if ex.partial.decode() == NACK:
                 return False
-            else:
-                raise
+            raise
         response = data.decode()
-        self.logger.debug("received: " + response)
+        self.logger.debug("received: %s", response)
         return response
 
     def _write(self, command):
         self._writer.write(command.encode())
-        self.logger.debug("sent: " + command)
+        self.logger.debug("sent: %s", command)
 
     async def _open_session(self, session=SESSION_COMMAND):
         """Initialize Connection."""
@@ -78,7 +79,7 @@ class BpbGate:
                 self._host, self._port
             )
         except OSError as err:
-            raise ConnectionError(err)
+            raise ConnectionError(err) from err
         # receive hello
         hello = await self._readuntil("##")
         if hello != ACK:
@@ -112,11 +113,16 @@ class BpbGate:
         self.logger.info("Authenticated")
         return True
 
+    async def connect(self):
+        """Create connection."""
+        await self._open_session()
+        return True
+
     async def send_raw(self, command):
         """Send a command to the gateway."""
         async with self.lock:
             if self._reader is None or self._reader.at_eof():
-                await self.command_session()
+                await self.connect()
             self._write(command)
             data = await self._readuntil(ACK)
             if not data:
@@ -127,15 +133,7 @@ class BpbGate:
 
 
 class BpbCommandSession(BpbGate):
-    def __init__(self, host, port, pwd):
-        """Constructor."""
-        super().__init__(host, port, pwd)
-        self.lock = asyncio.Lock()
-
-    async def connect(self):
-        """Create connection."""
-        await self._open_session()
-        return True
+    """ Command session with myHomeserver1 """
 
     async def send_command(self, who, what, where):
         """Send a command to the gateway."""
@@ -152,15 +150,15 @@ class BpbCommandSession(BpbGate):
         command = "*#%s*0##" % (who)
         async with self.lock:
             if self._reader is None or self._reader.at_eof():
-                await self.command_session()
+                await self.connect()
             self._write(command)
             data = await self._readuntil(ACK)
-            p = re.compile(r"\*\d+\*\d+\*\d+")
-            items = p.findall(data)
-            p = re.compile(r"\d+")
+            pattern = re.compile(r"\*\d+\*\d+\*\d+")
+            items = pattern.findall(data)
+            pattern = re.compile(r"\d+")
             hitems = {}
             for item in items:
-                (who, what, where) = p.findall(item)
+                (who, what, where) = pattern.findall(item)
                 hitems[where] = what
             return hitems
 
@@ -213,6 +211,8 @@ class BpbCommandSession(BpbGate):
 
 
 class BpbEventSession(BpbGate):
+    """ Event session with myHomeserver1 """
+
     async def connect(self):
         """Create connection."""
         await self._open_session(SESSION_EVENT)
@@ -222,7 +222,7 @@ class BpbEventSession(BpbGate):
         """Listen to gateway events."""
         data = await self._reader.readuntil(separator.encode())
         response = data.decode()
-        self.logger.debug("received: " + response)
+        self.logger.debug("received: %s", response)
         return response
 
     async def readevent_exploded(self):
