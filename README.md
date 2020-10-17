@@ -1,5 +1,4 @@
-brownpaperbag
-=============
+# brownpaperbag
 
 [![PyPI - version](https://img.shields.io/pypi/v/brownpaperbag.svg)](https://pypi.python.org/pypi/brownpaperbag)
 ![](https://github.com/bpaulin/brownpaperbag/workflows/build/badge.svg)
@@ -8,17 +7,13 @@ brownpaperbag
 
 > But you try and tell the young people today that...
 
-installation
-------------
+## installation
 
 ``` {.sourceCode .bash}
 pip install brownpaperbag
 ```
 
-Usage (cli)
------------
-
-### Configuration
+## Configuration
 
 You need to use the official app, and to be logged with the installer code
 
@@ -32,9 +27,101 @@ export BPB_PASSWORD=qwerty
 export BPB_PORT=20000
 ```
 
+## Commands
+
+``` {.sourceCode .bash}
+brownpaperbag --help
+Usage: brownpaperbag [OPTIONS] COMMAND [ARGS]...
+
+  Console script for brownpaperbag.
+
+  Provides interaction with myhomeserver1
+
+Options:
+  --host TEXT      MyHomeServer1 IP
+  --port INTEGER   MyHomeServer1 port
+  --password TEXT  OPEN password
+  -v, --verbose    Verbose mode, can be used twice
+  --help           Show this message and exit.
+
+Commands:
+  cover  Interact with a cover.
+  event  Subscribe to gateway events.
+  light  Interact with a light.
+  list   List known devices.
+  raw    Send raw openwebnet command.
+```
+
+### Cover interaction
+
+``` {.sourceCode .bash}
+Usage: brownpaperbag cover [OPTIONS] COVER_ID
+
+  Interact with a cover.
+
+Options:
+  --status  Get status
+  --up      Open
+  --down    Close
+  --stop    Stop
+  --help    Show this message and exit.
+```
+
+### Listen to events
+
+``` {.sourceCode .bash}
+Usage: brownpaperbag event [OPTIONS]
+
+  Subscribe to gateway events.
+
+Options:
+  --human  Human readable
+  --help   Show this message and exit.
+```
+
+### Light interaction
+
+``` {.sourceCode .bash}
+Usage: brownpaperbag light [OPTIONS] ID
+
+  Interact with a light.
+
+Options:
+  --status  Get status
+  --on      Turn On
+  --off     Turn Off
+  --help    Show this message and exit.
+```
+
+### List every devices
+
+``` {.sourceCode .bash}
+Usage: brownpaperbag list [OPTIONS]
+
+  List known devices.
+
+Options:
+  --lights / --no-lights  Include lights
+  --covers / --no-covers  Include covers
+  --help                  Show this message and exit.
+```
+
+### Send raw command
+
+``` {.sourceCode .bash}
+Usage: brownpaperbag raw [OPTIONS] COMMAND
+
+  Send raw openwebnet command.
+
+Options:
+  --help  Show this message and exit.
+```
+
+## Help & tricks
+
 ### Discovering devices
 
-the command `brownpaperbag event --human` can help you to discover devices
+the command `brownpaperbag event --human` can help you to identify devices
 
 ``` {.sourceCode .bash}
 $ brownpaperbag event --human

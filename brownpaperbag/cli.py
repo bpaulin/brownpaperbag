@@ -54,7 +54,7 @@ def main(ctx, host, port, password, verbose):
 
 
 @main.command()
-@click.option("--human", is_flag=True, help="human readable")
+@click.option("--human", is_flag=True, help="Human readable")
 @click.pass_context
 def event(ctx, human):
     """Subscribe to gateway events."""
@@ -97,7 +97,7 @@ def raw(ctx, command):
 
 @main.command()
 @click.option(
-    "--status", "operation", flag_value="status", default=True, help="get status"
+    "--status", "operation", flag_value="status", default=True, help="Get status"
 )
 @click.option("--on", "operation", flag_value="on", help="Turn On")
 @click.option("--off", "operation", flag_value="off", help="Turn Off")
@@ -125,7 +125,7 @@ def light(ctx, operation, light_id):
 
 @main.command()
 @click.option(
-    "--status", "operation", flag_value="status", default=True, help="get status"
+    "--status", "operation", flag_value="status", default=True, help="Get status"
 )
 @click.option("--up", "operation", flag_value="up", help="Open")
 @click.option("--down", "operation", flag_value="down", help="Close")
@@ -147,8 +147,8 @@ def cover(ctx, operation, cover_id):
 
 
 @main.command("list")
-@click.option("--lights/--no-lights", default=True, help="Include Lights")
-@click.option("--covers/--no-covers", default=True, help="Include Covers")
+@click.option("--lights/--no-lights", default=True, help="Include lights")
+@click.option("--covers/--no-covers", default=True, help="Include covers")
 @click.pass_context
 def list_devices(ctx, lights, covers):
     """List known devices."""
