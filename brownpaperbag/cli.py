@@ -17,7 +17,9 @@ def get_session(ctx, session_event=True):
         gate = BpbEventSession(ctx.obj["host"], ctx.obj["port"], ctx.obj["password"])
     else:
         gate = BpbCommandSession(ctx.obj["host"], ctx.obj["port"], ctx.obj["password"])
-    if ctx.obj["verbose"]:
+    if ctx.obj["verbose"] == 1:
+        gate.logger = logging.basicConfig(level=logging.INFO)
+    elif ctx.obj["verbose"] == 2:
         gate.logger = logging.basicConfig(level=logging.DEBUG)
     loop = asyncio.get_event_loop()
     try:
@@ -39,7 +41,7 @@ def get_session(ctx, session_event=True):
     hide_input=True,
     help="OPEN password",
 )
-@click.option("--verbose", is_flag=True)
+@click.option("-v", "--verbose", count=True, help="Verbose mode, can be used twice")
 @click.pass_context
 def main(ctx, host, port, password, verbose):
     """Console script for brownpaperbag.
