@@ -13,3 +13,14 @@ def test_command_line_interface():
     runner = CliRunner()
     help_result = runner.invoke(cli.main, ["--help"])
     assert help_result.exit_code == 0
+
+
+def test_command_line_sub_interface():
+    """Test the CLI."""
+    runner = CliRunner()
+    env = runner.make_env(
+        {"BPB_HOST": "192.168.1.10", "BPB_PASSWORD": "qwerty", "BPB_PORT": "20000",}
+    )
+    for subs in ["cover", "light", "list", "raw"]:
+        help_result = runner.invoke(cli.main, [subs, "--help",], env=env)
+        assert help_result.exit_code == 0
