@@ -17,6 +17,7 @@ class CommandSessionTestCase(asynctest.TestCase):
         self.my.set_socket(self.socket_mock)
 
     def wrapper_rcv(self, recv_data):
+        recv_data = iter(recv_data)
         recv_buffer = bytearray()
 
         def recv_side_effect(max_bytes):
@@ -42,6 +43,9 @@ class CommandSessionTestCase(asynctest.TestCase):
         return recv_side_effect
 
     def wrapper_send(self, sent_data):
+        sent_data = (b"*#*1##",) + sent_data
+        sent_data = iter(sent_data)
+
         def send_side_effect(data):
             try:
                 next_data = next(sent_data)
@@ -59,40 +63,45 @@ class CommandSessionTestCase(asynctest.TestCase):
     async def test_instance(self, mock_check):
         self.assertIsInstance(self.my, bpbgate.BpbCommandSession)
 
-    async def test_cover_state(self, mock_check):
+    async def test_authenticate(self, mock_check):
         self.socket_mock.recv.side_effect = self.wrapper_rcv(
-            iter(
-                (
-                    b"*#*1##",
-                    b"*98*2##",
-                    b"*#00000000000000000000000000##",
-                    b"*#00000000000000000000000000##",
-                )
+            (
+                b"*#*1##",
+                b"*98*2##",
+                b"*#00000000000000000000000000##",
+                b"*#00000000000000000000000000##",
             )
         )
         self.socket_mock.send.side_effect = self.wrapper_send(
-            iter(
-                (
-                    b"*#*1##",
-                    b"*99*9##",
-                    b"*#*1##",
-                    {"value": b"*#*1##", "assert": False},
-                    b"*#*1##",
-                )
+            (
+                # b"*#*1##",
+                b"*99*9##",
+                b"*#*1##",
+                {"value": b"*#*1##", "assert": False},
+                b"*#*1##",
             )
         )
         self.assertTrue(await self.my.connect())
 
-    async def test_cover_state2(self, mock_check):
-        self.socket_mock.recv.side_effect = self.wrapper_rcv(
-            iter((b"*2*0*10##", b"*#*1##"))
+    async def __abstract_bpb_test(self, receive, sent, method, check):
+        self.socket_mock.recv.side_effect = self.wrapper_rcv(receive)
+        self.socket_mock.send.side_effect = self.wrapper_send(sent)
+        with patch.object(self.my, "_authent", return_value=True):
+            state = await method
+            self.assertEqual(state, check)
+
+    async def test_is_light_on(self, mock_check):
+        await self.__abstract_bpb_test(
+            (b"*1*0*10##", b"*#*1##"), (b"*#1*10##",), self.my.is_light_on("10"), False,
         )
-        self.socket_mock.send.side_effect = self.wrapper_send(
-            iter((b"*#*1##", b"*#2*10##"))
+
+    async def test_get_cover_state(self, mock_check):
+        await self.__abstract_bpb_test(
+            (b"*2*0*10##", b"*#*1##"),
+            (b"*#2*10##",),
+            self.my.get_cover_state("10"),
+            "0",
         )
-        with patch.object(self.my, "_authent", return_value=True) as method:
-            state = await self.my.get_cover_state("10")
-            self.assertEqual(state, "0")
 
 
 if __name__ == "__main__":
