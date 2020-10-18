@@ -43,7 +43,7 @@ class CommandSessionTestCase(asynctest.TestCase):
         return recv_side_effect
 
     def wrapper_send(self, sent_data):
-        sent_data = (b"*#*1##",) + sent_data
+        sent_data = [b"*#*1##"] + sent_data
         sent_data = iter(sent_data)
 
         def send_side_effect(data):
@@ -65,21 +65,15 @@ class CommandSessionTestCase(asynctest.TestCase):
 
     async def test_authenticate(self, mock_check):
         self.socket_mock.recv.side_effect = self.wrapper_rcv(
-            (
+            [
                 b"*#*1##",
                 b"*98*2##",
                 b"*#00000000000000000000000000##",
                 b"*#00000000000000000000000000##",
-            )
+            ]
         )
         self.socket_mock.send.side_effect = self.wrapper_send(
-            (
-                # b"*#*1##",
-                b"*99*9##",
-                b"*#*1##",
-                {"value": b"*#*1##", "assert": False},
-                b"*#*1##",
-            )
+            [b"*99*9##", b"*#*1##", {"value": b"*#*1##", "assert": False}, b"*#*1##"]
         )
         self.assertTrue(await self.my.connect())
 
@@ -92,15 +86,62 @@ class CommandSessionTestCase(asynctest.TestCase):
 
     async def test_is_light_on(self, mock_check):
         await self.__abstract_bpb_test(
-            (b"*1*0*10##", b"*#*1##"), (b"*#1*10##",), self.my.is_light_on("10"), False,
+            [b"*1*0*10##", b"*#*1##"], [b"*#1*10##"], self.my.is_light_on("10"), False,
         )
 
     async def test_get_cover_state(self, mock_check):
         await self.__abstract_bpb_test(
-            (b"*2*0*10##", b"*#*1##"),
-            (b"*#2*10##",),
+            [b"*2*0*10##", b"*#*1##"],
+            [b"*#2*10##"],
             self.my.get_cover_state("10"),
             "0",
+        )
+
+    async def test_open_cover(self, mock_check):
+        await self.__abstract_bpb_test(
+            [b"*2*1*10##", b"*#*1##"], [b"*2*1*10##"], self.my.open_cover("10"), True,
+        )
+
+    async def test_close_cover(self, mock_check):
+        await self.__abstract_bpb_test(
+            [b"*2*2*10##", b"*#*1##"], [b"*2*2*10##"], self.my.close_cover("10"), True,
+        )
+
+    async def test_stop_cover(self, mock_check):
+        await self.__abstract_bpb_test(
+            [b"*2*0*10##", b"*#*1##"], [b"*2*0*10##"], self.my.stop_cover("10"), True,
+        )
+
+    async def test_turn_on_light(self, mock_check):
+        await self.__abstract_bpb_test(
+            [b"*1*1*10##", b"*#*1##"],
+            [b"*1*1*10##"],
+            self.my.turn_on_light("10"),
+            True,
+        )
+
+    async def test_turn_off_light(self, mock_check):
+        await self.__abstract_bpb_test(
+            [b"*1*0*10##", b"*#*1##"],
+            [b"*1*0*10##"],
+            self.my.turn_off_light("10"),
+            True,
+        )
+
+    async def test_get_light_id(self, mock_check):
+        await self.__abstract_bpb_test(
+            [b"*1*0*10##*1*1*11##*1*0*12##*#*1##"],
+            [b"*#1*0##"],
+            self.my.get_light_ids(),
+            {"10": "0", "11": "1", "12": "0"},
+        )
+
+    async def test_get_cover_id(self, mock_check):
+        await self.__abstract_bpb_test(
+            [b"*2*0*10##*2*1*11##*2*2*12##*#*1##"],
+            [b"*#2*0##"],
+            self.my.get_cover_ids(),
+            {"10": "0", "11": "1", "12": "2"},
         )
 
 

@@ -58,7 +58,6 @@ class BpbGate:
         self._sock = sock
 
     async def _readuntil(self, separator):
-        self._logger.debug("read")
         try:
             data = await self._reader.readuntil(separator.encode())
         except asyncio.IncompleteReadError as ex:
@@ -85,7 +84,7 @@ class BpbGate:
                     sock=self._sock
                 )
                 self._write(ACK)
-            else:
+            else:  # pragma: no cover
                 self._reader, self._writer = await asyncio.open_connection(
                     self._connection_data["host"], self._connection_data["port"]
                 )
@@ -185,37 +184,35 @@ class BpbCommandSession(BpbGate):
         self.logger.info("polling covers")
         return await self.send_list("2")
 
-    async def get_energy_ids(self):
-        """Return list of all cover ids."""
-        self.logger.info("polling covers")
-        return await self.send_list("18")
-
     async def turn_on_light(self, where):
         """Turn on a light by Id."""
-        await self.send_command("1", "1", where)
-        return True
+        response = await self.send_command("1", "1", where)
+        return response[3] == ON
 
     async def turn_off_light(self, where):
         """Turn off a light by Id."""
-        await self.send_command("1", "0", where)
-        return True
+        response = await self.send_command("1", "0", where)
+        return response[3] == OFF
 
     async def is_light_on(self, where):
         """Return light status by Id."""
-        response = await self.send_request("1", where)
+        response = response = await self.send_request("1", where)
         return response[3] == ON
 
     async def open_cover(self, where):
         """Open a cover by Id."""
-        await self.send_command("2", COVER_OPENING, where)
+        response = await self.send_command("2", COVER_OPENING, where)
+        return response[3] == COVER_OPENING
 
     async def close_cover(self, where):
         """Close a cover by Id."""
-        await self.send_command("2", COVER_CLOSING, where)
+        response = await self.send_command("2", COVER_CLOSING, where)
+        return response[3] == COVER_CLOSING
 
     async def stop_cover(self, where):
         """Stop a cover by Id."""
-        await self.send_command("2", COVER_STOPPED, where)
+        response = await self.send_command("2", COVER_STOPPED, where)
+        return response[3] == COVER_STOPPED
 
     async def get_cover_state(self, where):
         """Return cover status by Id."""
