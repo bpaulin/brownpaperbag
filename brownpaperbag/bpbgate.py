@@ -25,19 +25,18 @@ OFF = "0"
 class BpbGate:
     """Manage communication with myhomeserver1."""
 
-    ENCODING = "utf-8"
     TIMEOUT = 3
     _logger = None  # type: logging.Logger
-    _light_ids = None
-    _cover_ids = None
     _writer = None  # type: asyncio.StreamWriter
     _reader = None  # type: asyncio.StreamReader
-    _session_type = None
 
     def __init__(self, host, port, pwd):
         """Constructor."""
-        self._host = host
-        self._port = port
+        self._connection_data = {
+            "host": host,
+            "port": port,
+            "pwd": pwd,
+        }
         self._pwd = pwd
         self.lock = asyncio.Lock()
         self._sock = None
@@ -55,6 +54,7 @@ class BpbGate:
         self._logger = logger
 
     def set_socket(self, sock):
+        """Allow override of socket."""
         self._sock = sock
 
     async def _readuntil(self, separator):
@@ -87,7 +87,7 @@ class BpbGate:
                 self._write(ACK)
             else:
                 self._reader, self._writer = await asyncio.open_connection(
-                    self._host, self._port
+                    self._connection_data["host"], self._connection_data["port"]
                 )
         except OSError as err:
             raise ConnectionError(err) from err
