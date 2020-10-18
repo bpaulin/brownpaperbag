@@ -1,10 +1,13 @@
 import logging
-import unittest
+import asyncio
+import socket
+
+import asynctest
 
 from brownpaperbag.bpbgate import BpbGate
 
 
-class BpbGateTestCase(unittest.TestCase):
+class BpbGateTestCase(asynctest.TestCase):
     def setUp(self):
         self.my = BpbGate("192.168.1.**", 20000, "*******")
 

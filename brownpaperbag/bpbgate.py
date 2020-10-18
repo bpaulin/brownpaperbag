@@ -4,7 +4,7 @@ import asyncio
 import logging
 import re
 
-from brownpaperbag import authent
+from brownpaperbag.authent import generate_authent, check_server_authent
 
 SESSION_EVENT = "*99*1##"
 SESSION_COMMAND = "*99*9##"
@@ -40,6 +40,7 @@ class BpbGate:
         self._port = port
         self._pwd = pwd
         self.lock = asyncio.Lock()
+        self._sock = None
 
     @property
     def logger(self):
@@ -53,7 +54,11 @@ class BpbGate:
         """Allow override of logger."""
         self._logger = logger
 
+    def set_socket(self, sock):
+        self._sock = sock
+
     async def _readuntil(self, separator):
+        self._logger.debug("read")
         try:
             data = await self._reader.readuntil(separator.encode())
         except asyncio.IncompleteReadError as ex:
@@ -75,11 +80,20 @@ class BpbGate:
         """Initialize Connection."""
         self.logger.info("Connecting")
         try:
-            self._reader, self._writer = await asyncio.open_connection(
-                self._host, self._port
-            )
+            if self._sock:
+                self._reader, self._writer = await asyncio.open_connection(
+                    sock=self._sock
+                )
+                self._write(ACK)
+            else:
+                self._reader, self._writer = await asyncio.open_connection(
+                    self._host, self._port
+                )
         except OSError as err:
             raise ConnectionError(err) from err
+        return await self._authent(session)
+
+    async def _authent(self, session):
         # receive hello
         hello = await self._readuntil("##")
         if hello != ACK:
@@ -101,13 +115,12 @@ class BpbGate:
         self._write(ACK)
         nonce = await self._readuntil("##")
         # send authent
-        client_authent = authent.generate_authent(nonce, self._pwd)
+        client_authent = generate_authent(nonce, self._pwd)
         self._write(client_authent["client_response"])
         # check authent
         server_response = await self._readuntil("##")
-        if not authent.check_server_authent(client_authent, server_response):
+        if not check_server_authent(client_authent, server_response):
             raise ConnectionAbortedError("Unexpected confirmation from server")
-        # say ok
         self._write(ACK)
 
         self.logger.info("Authenticated")

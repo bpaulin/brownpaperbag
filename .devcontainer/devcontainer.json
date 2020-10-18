@@ -14,13 +14,18 @@
 	// Set *default* container specific settings.json values on container create.
 	"settings": {
 		"terminal.integrated.shell.linux": "/bin/zsh",
+		"files.autoSave": "onFocusChange",
 		"python.pythonPath": "/usr/local/bin/python",
 		"python.testing.unittestEnabled": false,
 		"python.testing.nosetestsEnabled": false,
 		"python.testing.pytestEnabled": true,
 		"python.testing.pytestPath": "/usr/local/bin/pytest",
 		"python.testing.pytestArgs": [
-			"--cov-report xml --cov-report term --cov"
+			"--cov-report",
+			"xml",
+			"--cov-report",
+			"term",
+			"--cov"
 		],
 		"python.linting.pylintEnabled": true,
 		"python.linting.enabled": true,
