@@ -1,7 +1,7 @@
 """Authentification helpers."""
 import hashlib
-import random
 import string
+from random import SystemRandom
 
 CLIENT_ID = "636F70653E"
 SERVER_ID = "736F70653E"
@@ -25,7 +25,8 @@ def _hex_to_digit(toconvert):
 
 
 def _generate_random_rb():
-    return "".join(random.choice(string.ascii_letters) for x in range(20))
+    cryptogen = SystemRandom()
+    return "".join(cryptogen.choice(string.ascii_letters) for x in range(20))
 
 
 def generate_authent(nonce, pwd, client_random=None):
