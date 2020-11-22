@@ -16,7 +16,7 @@ setup(
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
-        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
     ],
     description="Python3 API for the Bticino Myhomeserver1 gateway",
     entry_points={"console_scripts": ["brownpaperbag=brownpaperbag.cli:main"]},
