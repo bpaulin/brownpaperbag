@@ -1,11 +1,11 @@
-pytest==6.1.2
+pytest==6.2.0
 pytest-cov==2.10.1
 black==19.10b0
 pylint==2.6.0
-setuptools==50.3.2
-wheel==0.35.1
+setuptools==51.0.0
+wheel==0.36.1
 twine==3.2.0
 bump2version==1.0.1
 pip-upgrader==1.4.15
 asynctest==0.13.0
-bandit==1.6.2
+bandit==1.7.0
