@@ -19,7 +19,7 @@ def get_session(ctx, session_event=True):
         gate = BpbCommandSession(ctx.obj["host"], ctx.obj["port"], ctx.obj["password"])
     if ctx.obj["verbose"] == 1:
         logging.basicConfig(level=logging.INFO)
-    elif ctx.obj["verbose"] == 2:
+    elif ctx.obj["verbose"] > 1:
         logging.basicConfig(level=logging.DEBUG)
     loop = asyncio.get_event_loop()
     try:
