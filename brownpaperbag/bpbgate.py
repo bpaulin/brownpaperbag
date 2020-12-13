@@ -160,19 +160,15 @@ class BpbCommandSession(BpbGate):
     async def send_list(self, who):
         """Send a request to the gateway."""
         command = "*#%s*0##" % (who)
-        async with self.lock:
-            if self._reader is None or self._reader.at_eof():
-                await self.connect()
-            self._write(command)
-            data = await self._readuntil(ACK)
-            pattern = re.compile(r"\*\d+\*\d+\*\d+")
-            items = pattern.findall(data)
-            pattern = re.compile(r"\d+")
-            hitems = {}
-            for item in items:
-                (who, what, where) = pattern.findall(item)
-                hitems[where] = what
-            return hitems
+        data = await self.send_raw(command)
+        pattern = re.compile(r"\*\d+\*\d+\*\d+")
+        items = pattern.findall(data)
+        pattern = re.compile(r"\d+")
+        hitems = {}
+        for item in items:
+            (who, what, where) = pattern.findall(item)
+            hitems[where] = what
+        return hitems
 
     async def get_light_ids(self):
         """Return list of all lights ids."""
