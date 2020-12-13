@@ -20,7 +20,7 @@ setup(
     ],
     description="Python3 API for the Bticino Myhomeserver1 gateway",
     entry_points={"console_scripts": ["brownpaperbag=brownpaperbag.cli:main"]},
-    install_requires=["Click>=6.0"],
+    install_requires=["Click>=7.0"],
     license="MIT license",
     long_description=readme,
     long_description_content_type="text/markdown",

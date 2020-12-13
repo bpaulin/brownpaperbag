@@ -30,6 +30,7 @@ def get_session(ctx, session_event=True):
 
 
 @click.group()
+@click.version_option()
 @click.option("--host", envvar="BPB_HOST", prompt=True, help="MyHomeServer1 IP")
 @click.option(
     "--port", envvar="BPB_PORT", default=20000, prompt=True, help="MyHomeServer1 port"
