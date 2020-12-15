@@ -4,7 +4,7 @@
 
 __author__ = """Bruno Paulin"""
 __email__ = "brunopaulin@bpaulin.net"
-__version__ = "2.0.3"
+__version__ = "2.0.4"
 
 # flake8: noqa
 from .bpbgate import BpbCommandSession, BpbEventSession
