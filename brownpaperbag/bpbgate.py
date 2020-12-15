@@ -226,9 +226,7 @@ class BpbEventSession(BpbGate):
 
     async def readevent(self, separator="##"):
         """Listen to gateway events."""
-        data = await self._reader.readuntil(separator.encode())
-        response = data.decode()
-        self.logger.debug("received: %s", response)
+        response = await self._readuntil(separator)
         return response
 
     async def readevent_exploded(self):
